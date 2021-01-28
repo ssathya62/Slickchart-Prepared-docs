@@ -25,8 +25,8 @@ We will be using the following API calls to obtain the firm financial data:
 
   
 
-The application on startup will read the collection 'EarningsCalendar' for documents that have the field 'EarningsRetrieved' marked false and the field 'Date' earlier than the actual run day. While performing proof-of-concept it was observed that FMP will not allow more than 
+The application on startup will read the collection 'EarningsCalendar' for documents that have the field 'EarningsRetrieved' marked false and the field 'Date' earlier than the actual run day. While performing proof-of-concept it was observed that FMP limits concurrent calls.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjUxNzg3NDg1LC00MDM0NTY1MzQsMTg4Mj
-AyMjk2NV19
+eyJoaXN0b3J5IjpbLTg0OTEzNDE4NSwtNDAzNDU2NTM0LDE4OD
+IwMjI5NjVdfQ==
 -->
