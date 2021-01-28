@@ -12,21 +12,11 @@ The computation is based on the wonderful article written by [Camilo Cisera](htt
 We will be using the following API calls to obtain the firm financial data:
 
   
-|  |  |
+| Statement |API endpoint  |
 |--|--|
-|  |  |
-
-Income Statement:
-
-https://financialmodelingprep.com/api/v3/income-statement/{firm}?limit=13&apikey=demo&period=quarter
-
-Balancesheet Statement:
-
-https://financialmodelingprep.com/api/v3/balance-sheet-statement/{firm}?limit=13&apikey=demo&period=quarter
-
-Cashflow Statment:
-
-https://financialmodelingprep.com/api/v3/cash-flow-statement/{firm}?limit=13&apikey=demo&period=quarter
+| Income Statement |https://financialmodelingprep.com/api/v3/income-statement/{firm}?limit=13&apikey=demo&period=quarter  |
+|Balancesheet Statement|https://financialmodelingprep.com/api/v3/balance-sheet-statement/{firm}?limit=13&apikey=demo&period=quarter|
+|Cashflow Statment|https://financialmodelingprep.com/api/v3/cash-flow-statement/{firm}?limit=13&apikey=demo&period=quarter|
 
   
 
@@ -36,6 +26,6 @@ https://financialmodelingprep.com/api/v3/cash-flow-statement/{firm}?limit=13&api
 
 The application on startup will read the collection 'EarningsCalendar' for documents that have the field 'EarningsRetrieved' marked false and the field 'Date' earlier than the actual run day.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTkyNTI4ODA0NiwtNDAzNDU2NTM0LDE4OD
-IwMjI5NjVdfQ==
+eyJoaXN0b3J5IjpbLTQyMTc0MDY2LC00MDM0NTY1MzQsMTg4Mj
+AyMjk2NV19
 -->
