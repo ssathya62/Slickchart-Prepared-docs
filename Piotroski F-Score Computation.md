@@ -1,3 +1,4 @@
+# Piotroski F-Score Computation
 The Piotroski Score is a discrete score between zero and nine that reflects nine criteria used to determine the strength of a firm's financial position. The Piotroski Score is used to determine the best value stocks, with nine being the best and zero being the worst.
 This score is computed using the company’s accounting results in recent periods (years). For every criterion met (noted below), one point is awarded; otherwise, no points are awarded. The points are then added up to determine the best value stocks.
 
@@ -179,5 +180,5 @@ In the event, the Vendor does not have ratings for equity its rating will be mar
 Any record that was last computed/refreshed more than 100 days and if has been removed from the index list will be purged. 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTUyMzMwMTI2MV19
+eyJoaXN0b3J5IjpbLTEwNzQ5OTE4OTAsMTUyMzMwMTI2MV19
 -->
