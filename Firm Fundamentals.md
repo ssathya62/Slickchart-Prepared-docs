@@ -36,13 +36,13 @@ To obtain the fundamentals the application needs to make 3 calls per
 institution. Based on observation it has been decided that we will limit to
 **two** firms for each invocation of the application, i.e. the application will
 make six API calls each time it is invoked. If we are going to invoke the
-application 75 times a day, then we can obtain the fundamentals of 150 firms a
+application 35 times a day, then we can obtain the fundamentals of 70 firms a
 day.
 
 The business logic needs us to compute the fundamentals for firms that are
 included in the S&P500 and NASDAQ-100 and there are many overlapping industries.
 The combined list is usually around 525 to 550 and even during busy earning
-seasons of quarter ends we can catch-up within a week.
+seasons of quarter ends we can catch-up quickly.
 
 ## Procedure
 
