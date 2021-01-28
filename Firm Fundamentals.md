@@ -18,14 +18,15 @@ We will be using the following API calls to obtain the firm financial data:
 |Balancesheet Statement|https://financialmodelingprep.com/api/v3/balance-sheet-statement/{firm}?limit=13&apikey=demo&period=quarter|
 |Cashflow Statment|https://financialmodelingprep.com/api/v3/cash-flow-statement/{firm}?limit=13&apikey=demo&period=quarter|
 
+
   
 
 {firm} will be replaced with the ticker that we are going to request. We will limit to 13 quarters of data as we will be using only two years of data (8 quarters - getting a year and a quarter of additional data for no valid reason at this time).
 
   
 
-The application on startup will read the collection 'EarningsCalendar' for documents that have the field 'EarningsRetrieved' marked false and the field 'Date' earlier than the actual run day.
+The application on startup will read the collection 'EarningsCalendar' for documents that have the field 'EarningsRetrieved' marked false and the field 'Date' earlier than the actual run day. FMP limits the number of calls one can 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQyMTc0MDY2LC00MDM0NTY1MzQsMTg4Mj
+eyJoaXN0b3J5IjpbNDI2OTM5MTkzLC00MDM0NTY1MzQsMTg4Mj
 AyMjk2NV19
 -->
