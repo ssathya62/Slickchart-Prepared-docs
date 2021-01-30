@@ -11,9 +11,9 @@ Cisera](https://codingandfun.com/piotroski-f-score/). Camilo has gone over the
 API used and computation but has used an undocumented API call that does not
 exist in FMP documentation anymore.
 
-## API Calls 
+## API Calls
 
-~~We will be using the following API calls to obtain the firm financial data:~~
+We will be using the following API calls to obtain the firm financial data:
 
 | Statement              | API endpoint                                                                                                |
 |------------------------|-------------------------------------------------------------------------------------------------------------|
@@ -21,31 +21,28 @@ exist in FMP documentation anymore.
 | Balancesheet Statement | https://financialmodelingprep.com/api/v3/balance-sheet-statement/{firm}?limit=13&apikey=demo&period=quarter |
 | Cashflow Statment      | https://financialmodelingprep.com/api/v3/cash-flow-statement/{firm}?limit=13&apikey=demo&period=quarter     |
 
-~~{firm} will be replaced with the ticker that we are going to request. We will
+{firm} will be replaced with the ticker that we are going to request. We will
 limit to 13 quarters of data as we will be using only two years of data (8
 quarters - getting a year and a quarter of additional data for no valid reason
-at this time).~~
+at this time).
 
 ## Obstacles
 
-~~During the proof-of-concept phase, it was observed that FMP limits concurrent
+During the proof-of-concept phase, it was observed that FMP limits concurrent
 calls. Also, the FMP limits the number of calls one can make, and the account
-used has a limit of 250 calls a day~~.
+used has a limit of 250 calls a day.
 
-~~To obtain the fundamentals the application needs to make 3 calls per
+To obtain the fundamentals the application needs to make 3 calls per
 institution. Based on observation it has been decided that we will limit to
 **two** firms for each invocation of the application, i.e. the application will
 make six API calls each time it is invoked. If we are going to invoke the
-application 35 times a day, then we can obtain the fundamentals of 70 firms a
-day.~~
+application 75 times a day, then we can obtain the fundamentals of 150 firms a
+day.
 
-~~The business logic needs us to compute the fundamentals for firms that are
+The business logic needs us to compute the fundamentals for firms that are
 included in the S&P500 and NASDAQ-100 and there are many overlapping industries.
 The combined list is usually around 525 to 550 and even during busy earning
-seasons of quarter ends we can catch-up quickly.~~
-
-## Revison
-
+seasons of quarter ends we can catch-up within a week.
 
 ## Procedure
 
@@ -73,6 +70,6 @@ seasons of quarter ends we can catch-up quickly.~~
 -   Any record that is older than a one-quarter year will be purged.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjA5ODYxNDkwMCwtODQ5MTM0MTg1LC00MD
-M0NTY1MzQsMTg4MjAyMjk2NV19
+eyJoaXN0b3J5IjpbLTc2ODkzMDgzNSwyMDk4NjE0OTAwLC04ND
+kxMzQxODUsLTQwMzQ1NjUzNCwxODgyMDIyOTY1XX0=
 -->
