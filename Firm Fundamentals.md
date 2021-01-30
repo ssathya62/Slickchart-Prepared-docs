@@ -13,7 +13,7 @@ exist in FMP documentation anymore.
 
 ## API Calls 
 
-We will be using the following API calls to obtain the firm financial data:
+~~We will be using the following API calls to obtain the firm financial data:~~
 
 | Statement              | API endpoint                                                                                                |
 |------------------------|-------------------------------------------------------------------------------------------------------------|
@@ -21,10 +21,10 @@ We will be using the following API calls to obtain the firm financial data:
 | Balancesheet Statement | https://financialmodelingprep.com/api/v3/balance-sheet-statement/{firm}?limit=13&apikey=demo&period=quarter |
 | Cashflow Statment      | https://financialmodelingprep.com/api/v3/cash-flow-statement/{firm}?limit=13&apikey=demo&period=quarter     |
 
-{firm} will be replaced with the ticker that we are going to request. We will
+~~{firm} will be replaced with the ticker that we are going to request. We will
 limit to 13 quarters of data as we will be using only two years of data (8
 quarters - getting a year and a quarter of additional data for no valid reason
-at this time).
+at this time).~~
 
 ## Obstacles
 
@@ -70,6 +70,6 @@ seasons of quarter ends we can catch-up quickly.
 -   Any record that is older than a one-quarter year will be purged.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTM0MjUxNjkxMSwtODQ5MTM0MTg1LC00MD
-M0NTY1MzQsMTg4MjAyMjk2NV19
+eyJoaXN0b3J5IjpbMTM1Nzg3NTEwLC04NDkxMzQxODUsLTQwMz
+Q1NjUzNCwxODgyMDIyOTY1XX0=
 -->
