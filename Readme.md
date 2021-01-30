@@ -1,6 +1,7 @@
 
-[Piotroski F-Score Computation](../Piotroski%20F-Score%20Computation.md)
-[Firm Fundamentals](Firm%20Fundamentals.md)
+[Piotroski F-Score Computation](../Piotroski F-Score Computation.md)
+
+[Firm Fundamentals](Firm Fundamentals.md)
 
 > Written with [StackEdit](https://stackedit.io/).
 <!--stackedit_data:
