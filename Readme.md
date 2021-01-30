@@ -1,9 +1,10 @@
 # Contents
 
-[Piotroski F-Score Computation](Piotroski F-Score Computation.md)
+[Piotroski F-Score Computation](PiotroskiF-ScoreComputation.md)
 
-[Firm Fundamentals](Firm Fundamentals.md)
+[Firm Fundamentals](FirmFundamentals.md)
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTgxNTMwMzgwNSw2MDMwMzExNl19
+eyJoaXN0b3J5IjpbLTEzODY1MjYwOSwtODE1MzAzODA1LDYwMz
+AzMTE2XX0=
 -->
