@@ -1,184 +1,268 @@
-# Piotroski F-Score Computation
-The Piotroski Score is a discrete score between zero and nine that reflects nine criteria used to determine the strength of a firm's financial position. The Piotroski Score is used to determine the best value stocks, with nine being the best and zero being the worst.
-This score is computed using the company’s accounting results in recent periods (years). For every criterion met (noted below), one point is awarded; otherwise, no points are awarded. The points are then added up to determine the best value stocks.
+## Blazor server-side
 
-### Basic Outline of Scoring
->* The score is a ranking between zero and nine that incorporates nine factors that speak to a firm’s financial strength.
->* The scale was created by Joseph Piotroski
->* The nine aspects are based on accounting results over many years; a point is awarded each time a standard is met, resulting in an overall score.
->* If a company has a score of eight or nine, it is considered a good value. If a company has a score of between zero and two points, it not a good value.
-#Scoring matrix
+# Installation
 
-The score is broken down into the following categories:
+[Index](Documentation.md)
 
-1.	Profitability
-I.	Positive net income
-II.	Positive return on assets in the current year.
-III.	Positive operating cash flow in the current year.
-IV.	Cash flow from operations being greater than net income.
+The **GridBlazor** component installation is straightforward. Just follow these steps:
 
-2.	Leverage, liquidity, and source of funds
-I.	Lower ratio of long term debt in the current period, compared to the previous year.
-II.	Higher current ratio this year compared to the previous year.
-III.	No new shares were issued in the last year.
+1. Create a new Blazor server-side solution using the **Blazor Server App** template
 
-3.	Operating efficiency
-I.	A higher gross margin compared to the previous year
-II.	A higher asset turnover ratio compared to the previous year.
-### Computation
-The values can be computed by the application but a vendor, Simfin, provides the computed values, and when we can leverage external compute why not leverage it? Simfin currently covers around 3,000 firms and does include most of the listed firms included in S&P500 and NASDAQ. But it does miss some of the firms and we need to compute the values. To compute the values we need to obtain the underlying data, balance sheet, cash flow, and income statements from its 10-K and 10-Q filings.  We can get these underlying data from Financial Modeling Prep. 
-#### Proposed changes
-•	The application is currently trying to obtain the Piotroski score only for the top 100 firms by dollar volume. The proposed change is to obtain the score for all firms; the combined list between the two indexes will be around 530 to 550 securities.
-•	Piotroski score is currently obtained every day by the application. The score will change only based on filings; i.e. only once a quarter. Hence the score for each firm will be obtained/computed only 4 times a year.
-•	To fulfill the above change we need to obtain the earnings calendar for the firms listed in indexes. This data can be obtained from Finnhub Stock API.
-•	Underlying filing data, Balance-sheet, Cash-flow, and Income-statement, can be obtained from Financial Modeling Prep.
-#### Implementation Details
-##### List of Index Securities
-Index securities are currently obtained from an external vendor SlickChar and existing feed and processed results can be leveraged.
-##### Earnings Calendar
-The earnings calendar will be obtained from Finnhub every day for a window of two months; one month prior and one month looking forward. The values obtained from the vendor will be upserted(insert/updated) to the database. 
-Finnhub’s earnings calendar have the following fields:
->* Date: (Reporting date)
->* EPS Actual
->* EPS Estimate
->* Hour: (dmh/amc/bmo)
->* Quarter:
->* Revenue Actual
->* Revenue Estimate
->* Symbol
->* Year
+2. Install [**GridBlazor**](http://nuget.org/packages/GridBlazor/) and [**GridMvcCore**](http://nuget.org/packages/GridMvcCore/) nuget packages on the project.
 
-These values will be stored in the database but an additional field processing date will be added while storing into the database. Also, care will be taken that only one record exists per symbol in the database.
-##### Clean up
-Any record that has Reporting date aged more than 100 calendar days will be purged from the collection. The reasoning is every firm is mandated to do its quarterly filing as long as it is listed in NYSE/NASDAQ and at least provide the next reporting date at least 30 days in advance. Hence the assumption that a reporting date is older than 100 calendar days is a stale record is valid.
-#### Obtain Financials
-This process will be the one that will obtain indexes firm’s financials. Due to the limitation imposed by the vendor, the process will be limited to process not more than two securities at a time. To satisfy vendor requirements and business needs the application will run around 40 times a day (40 * 2 * 3 = 240 calls). 
-The application first checks the earning calendar for all firms that have already reported (reporting date less than run date) and does not have the processing date set. If the firm(s) are included in index securities the application will bring its financials and store the values in the database. 
-##### Clean up
-Any record that is older than three years can be considered as aged and be purged. Also, any record that is referring to a symbol that is not included in the index securities can be marked as inactive.
-#### Compute values
-This process is the one that will compute the values. The following fields are proposed to be stored in rating collection:
+3. Add the following lines to the **_Host.cshtml** view or directly to the page:
+    ```html
+        <link href="_content/GridBlazor/css/gridblazor.min.css" rel="stylesheet" />
+        <script src="_content/GridBlazor/js/gridblazor.js"></script>
+    ```
+    These files will be loaded from the **GridBlazor** nuget package, so it is not necessary to copy it to you project.
+ 
+4. If you are using Boostrap 3.x you will also need this line in the **_Host.cshtml** view or directly to the page:
+    ```html
+        <link href="~/_content/GridBlazor/css/gridblazor-bootstrap3.min.css" rel="stylesheet" />
+     ```
+ 
+## Blazor server-side
 
-|Symbol|Vendor Rating  |Vendor fetch date  |Computed Rating  |Compute Date  |Piotroski values as enumerable  |
-|--|--|--|--|--|--|
+# Quick start with GridBlazor
+
+[Index](Documentation.md)
+
+Imagine that you have to retrieve a collection of model items in your project. For example if your model class is:
+    
+```c#
+    public class Order
+    {
+        [Key]
+        public int OrderID { get; set; }
+        public string CustomerID { get; set; }
+        public DateTime? OrderDate { get; set; }
+        public virtual Customer Customer { get; set; }
+        ...
+    }
+```
+
+The steps to build a grid razor page using **GridBlazor** are:
+
+1. Create a service with a method to get all items for the grid. An example of this type of service is: 
+
+    ```c#
+        public class OrderService
+        {
+            ...
+
+            public ItemsDTO<Order> GetOrdersGridRows(Action<IGridColumnCollection<Order>> columns,
+                    QueryDictionary<StringValues> query)
+            {
+                var repository = new OrdersRepository(_context);
+                var server = new GridServer<Order>(repository.GetAll(), new QueryCollection(query), 
+                    true, "ordersGrid", columns, 10);
+            
+                // return items to displays
+                return server.ItemsToDisplay;
+            }
+        }
+    ```
+
+    **Notes**:
+    * The method must have 2 parameters:
+        * the first one is a lambda expression with the column definition of type **Action<IGridColumnCollection<T>>**
+        * the second one is a dictionary to pass query parameters such as **grid-page**. It must be ot type **QueryDictionary<StringValues>**
+
+    * You can use multiple methods of the **GridServer** object to configure a grid on the server. For example:
+        ```c#
+            var server = new GridServer<Order>(repository.GetAll(), Request.Query, true, "ordersGrid", columns, 10)
+                .Sortable()
+                .Filterable()
+                .WithMultipleFilters();
+        ```
+    * The method returns an object including the model rows to be shown on the grid and other information requirired for paging, etc. The object type returned by the action must be **ItemsDTO<T>**.
+
+2. You have to register the service in the **Startup** class:
+
+    ```c#
+        public void ConfigureServices(IServiceCollection services)
+        {
+            ...
+
+            services.AddSingleton<OrderService>();
+            
+            ...
+        }
+    ```
+
+3. Add a reference to **GridBlazor**, **GridBlazor.Pages**, **GridShared** and **GridShared.Utility** in the **_Imports.razor** file of the root folder
+
+    ```razor
+        ...
+        @using GridBlazor
+        @using GridBlazor.Pages
+        @using GridShared
+        @using GridShared.Utility
+        ...
+    ```
+
+4. Create a razor page to render the grid. The page file must have a .razor extension. An example of razor page is:
+
+    ```razor
+        @page "/gridsample"
+        @using Microsoft.Extensions.Primitives
+        @inject OrderService orderService
+
+        @if (_task.IsCompleted)
+        {
+            <GridComponent T="Order" Grid="@_grid"></GridComponent>
+        }
+        else
+        {
+            <p><em>Loading...</em></p>
+        }
+
+        @code
+        {
+            private CGrid<Order> _grid;
+            private Task _task;
+
+            protected override async Task OnParametersSetAsync()
+            {
+                Action<IGridColumnCollection<Order>> columns = c =>
+                {
+                    c.Add(o => o.OrderID);
+                    c.Add(o => o.OrderDate, "OrderCustomDate").Format("{0:yyyy-MM-dd}");
+                    c.Add(o => o.Customer.CompanyName);
+                    c.Add(o => o.Customer.IsVip);
+                };
+
+                var query = new QueryDictionary<StringValues>();
+                query.Add("grid-page", "2");
+
+                var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns);
+                _grid = client.Grid;
+
+                // Set new items to grid
+                _task = client.UpdateGrid();
+                await _task;
+            }
+        }
+    ```
+
+    **Notes**:
+    * You must create a **GridClient** object in the **OnParametersSetAsync** of the razor page. This object contains a parameter of **CGrid** type called **Grid**. 
+
+    * You can use multiple methods of the **GridClient** object to configure a grid. For example:
+        ```c#
+            var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns)
+                .SetRowCssClasses(item => item.Customer.IsVip ? "success" : string.Empty)
+                .Sortable()
+                .Filterable()
+                .WithMultipleFilters();
+        ```
+
+    * The **GridClient** object used on the razor page and the **GridServer** object on the service must have compatible settings.
+
+    * You must call the **UpdateGrid** method of the **GridClient** object at the end of the **OnParametersSetAsync** of the razor page because it will request for the required rows to the server
+
+    * If you need to update the component out of ```OnParametersSetAsync``` method you must use a reference to the component:
+        ```c#
+            <GridComponent @ref="Component" T="Order" Grid="@_grid"></GridComponent>
+        ```
+
+        and then call the ```UpdateGrid``` method:
+        ```c#
+            await Component.UpdateGrid();
+        ```
+
+    * The **GridComponent** tag must contain at least these 2 attributes:
+        * **T**: type of the model items
+        * **Grid**: grid object that has to be created in the **OnParametersSetAsync** method of the razor page
+
+For more documentation about column options, please see: [Custom columns](Custom_columns.md).
+
+## Blazor server-side
+
+# GridBlazor configuration
+
+[Index](Documentation.md) 
+
+You can configure the settings of the grid with the parameters and methods of the **GridComponent**, **GridClient** and **GridServer** objects. Remember that they must have compatible settings.
+
+## GridComponent parameters
+
+Parameter | Type | Description | Example
+--------- | ---- | ----------- | -------
+T | ```Type``` (mandatory) | type of the model items | ```<GridComponent T="Order" Grid="@_grid" />```
+Grid | ```ICGrid``` (mandatory) | grid object that has to be created in the ```OnParametersSetAsync``` method of the Blazor page | ```<GridComponent T="Order" Grid="@_grid" />```
+OnRowClicked | ```Action<object>``` (optional) |  to be executed when selecting a row on "selectable" grids | ```<GridComponent T="Order" Grid="@_grid" OnRowClicked="@OrderDetails" />```
+CustomFilters | ```IQueryDictionary<Type>``` (optional) | Dictionary containing all types of custom filter widgets used on the grid  | ```<GridComponent T="Order" Grid="@_grid" CustomFilters="@_customFilters" />```
+GridMvcCssClass | ```string``` (optional) | Html classes used by the parent grid element (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridMvcCssClass="grid-mvc-alt" />```
+GridWrapCssClass | ```string``` (optional) | Html classes used by the wrap element (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridWrapCssClass ="grid-wrap-alt" />```
+GridFooterCssClass | ```string``` (optional) | Html classes used by the footer element (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridFooterCssClass="grid-footer-alt" />```
+GridItemsCountCssClass | ```string``` (optional) | Html classes used by the items count element (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridItemsCountCssClass="grid-items-count-alt" />```
+TableCssClass | ```string``` (optional) | Html classes used by the table element (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" TableCssClass="grid-table-alt" />```
+TableWrapCssClass | ```string``` (optional) | Html classes used by the parent div of the table element (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" TableWrapCssClass="table-wrap-alt" />```
+GridHeaderCssClass | ```string``` (optional) | Html classes used by the table header element (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridHeaderCssClass="grid-header-alt" />```
+GridCellCssClass | ```string``` (optional) | Html classes used by the cell elements (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridCellCssClass="grid-cell-alt" />```
+GridButtonCellCssClass | ```string``` (optional) | Html classes used by the button elements of CRUD grids (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridButtonCellCssClass="grid-button-cell-alt" />```
+GridSubGridCssClass | ```string``` (optional) | Html classes used by the subgrid elements (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridSubGridCssClass="grid-subgrid-alt" />```
+GridEmptyTextCssClass | ```string``` (optional) | Html classes used by the empty cell elements (it overrides default parameter) | ```<GridComponent T="Order" Grid="@_grid" GridEmptyTextCssClass="grid-empty-text-alt" />```
+
+## GridClient parameters
+
+Parameter | Description | Example
+--------- | ----------- | -------
+dataService | lamba expresion of the service method returning rows | q => orderService.GetOrdersGridRows(columns, q)
+query | dictionary containing grid parameters as the initial page | query.Add("grid-page", "2");
+renderOnlyRows | boolean to configure if only rows are renderend by the server or all the grid object | Must be **false** for Blazor solutions
+gridName | string containing the grid client name  | ordersGrid
+columns | lambda expression to define the columns included in the grid (**Optional**) | c => { c.Add(o => o.OrderID); c.Add(o => o.Customer.CompanyName); };
+cultureInfo | **CultureInfo** class to define the language of the grid (**Optional**) | new CultureInfo("de-DE");
+
+## GridClient methods
+
+Method name | Description | Example
+----------- | ----------- | -------
+AutoGenerateColumns | Generates columns for all properties of the model using data annotations | GridClient<Order>(...).AutoGenerateColumns();
+Sortable | Enable or disable sorting for all columns of the grid | GridClient<Order>(...).Sortable(true);
+Searchable | Enable or disable searching on the grid | GridClient<Order>(...).Searchable(true, true);
+Filterable | Enable or disable filtering for all columns of the grid | GridClient<Order>(...).Filterable(true);
+WithMultipleFilters | Allow grid to use multiple filters | GridClient<Order>(...).WithMultipleFilters();
+ClearFiltersButton | Enable or disable the ClearFilters button | GridClient<Order>(...).ClearFiltersButton(true);
+Selectable | Enable or disable the client grid items selectable feature | GridClient<Order>(...).Selectable(true, true);
+SetStriped | Enable or disable the grid as a striped one | GridClient<Order>(...).SetStriped(true);
+SetKeyboard | Enable or disable the keyboard navigation | GridClient<Order>(...).SetKeyboard(true);
+SetModifierKey | Configure the modifier key for keyboard navigation | GridClient<Order>(...).SetModifierKey(ModifierKey.ShiftKey);
+EmptyText | Setup the text displayed for all empty items in the grid | GridClient<Order>(...).EmptyText(' - ');
+WithGridItemsCount | Allows the grid to show items count | GridClient<Order>(...).WithGridItemsCount();
+SetRowCssClasses | Setup specific row css classes | GridClient<Order>(...).SetRowCssClasses(item => item.Customer.IsVip ? "success" : string.Empty);
+AddToOnAfterRender | Add a Func<GridComponent<T>, bool, Task> to be executed at the end of the ```OnAfterRenderAsync``` method of the grid component | GridClient<Order>(...).AddToOnAfterRender(OnAfterDepartmentRender);
+SetDirection | Allows the grid to be show in right to left direction | GridClient<Order>(...).SetDirection(GridDirection.RTL);
+HandleServerErrors | Allows errors from the server to be handled by grid client | GridClient<Order>(...).HandleServerErrors(true, false);
+SetTableLayout | Configure fixed dimensions for the grid | GridClient<Order>(...).SetTableLayout(TableLayout.Fixed, "1200px", "400px");
+
+## GridServer parameters
+
+Parameter | Description | Example
+--------- | ----------- | -------
+items | **IEnumerable<T>** object containing all the grid rows | repository.GetAll()
+query | **IQueryCollection** containing all grid parameters | Must be the **Request.Query** of the controller
+renderOnlyRows | boolean to configure if only rows are renderend by the server or all the grid object | Must be **true** for Blazor solutions
+gridName | string containing the grid client name  | ordersGrid
+columns | lambda expression to define the columns included in the grid (**Optional**) | **Columns** lamba expression defined in the razor page of the example
+pageSize | integer to define the number of rows returned by the web service (**Optional**) | 10
+
+## GridServer methods
+
+Method name | Description | Example
+----------- | ----------- | -------
+AutoGenerateColumns | Generates columns for all properties of the model using data annotations | GridServer<Order>(...).AutoGenerateColumns();
+Sortable | Enable or disable sorting for all columns of the grid | GridServer<Order>(...).Sortable(true);
+Searchable | Enable or disable searching on the grid | GridServer<Order>(...).Searchable(true, true);
+Filterable | Enable or disable filtering for all columns of the grid | GridServer<Order>(...).Filterable(true);
+WithMultipleFilters | Allow grid to use multiple filters | GridServer<Order>(...).WithMultipleFilters();
+WithGridItemsCount | Allows the grid to show items count | GridServer<Order>(...).WithGridItemsCount();
 
 
-_Code that was developed for POC._
-
-```cs
-public int GetScore()
-		{
-			if (balanceSheet == null ||
-				balanceSheet.Financials == null ||
-				balanceSheet.Financials.Count < LookbackTime ||
-				incomeStatement == null ||
-				incomeStatement.Financials == null ||
-				incomeStatement.Financials.Count < LookbackTime ||
-				cashFlowStatement == null ||
-				cashFlowStatement.Financials == null ||
-				cashFlowStatement.Financials.Count < LookbackTime)
-			{
-				return 0;
-			}
-			GetValuesFromBalanceSheet(out decimal longTermDebt, out decimal totalAssets,
-				out decimal currentAssets, out decimal currentLiabilities,
-				out decimal py_longTermDebt, out decimal py_totalAsseets,
-				out decimal py_currentAssets, out decimal py_currentLiabilities,
-				out decimal py2_totalAsseets);
-
-			//Income statement
-			GetValuesFromIncomeStatement(out decimal curYrRevenue, out decimal prYrRevenue,
-				out decimal curYrGrossProfit, out decimal prYrGrossProfit,
-				out decimal curYrNetIncome, out decimal pyYrNetIncome,
-				out decimal wtAvgOutstandingShares, out decimal wtAvgOutstandingShares_py);
-
-			//Cash-flow
-			decimal cyCashFlowOCF = GetValuesFromCashFlowStatment();
-
-			//Now let us compute the values
-			//1. Returns on assets
-			var roaFS = (curYrNetIncome / ((totalAssets + py_totalAsseets) / 2)) > 0 ? 1 : 0;
-			//2. Positive operating cash flow
-			var cfoFS = cyCashFlowOCF > 0 ? 1 : 0;
-			//3. Higher return on assets than the previous year
-			var roaDFS = (curYrNetIncome / ((totalAssets + py_totalAsseets) / 2)) >
-				(pyYrNetIncome / ((py_totalAsseets + py2_totalAsseets) / 2)) ? 1 : 0;
-			//4. Accruals; leverage, liquidity, and source of funds
-			var cfoRoaFS = (cyCashFlowOCF / totalAssets) > (curYrNetIncome / ((totalAssets + py_totalAsseets) / 2)) ? 1 : 0;
-			//5. Change in the leverage ratio;
-			var ltdFS = longTermDebt < py_longTermDebt ? 1 : 0;
-			//6. Change in current ratio
-			var crFS = (currentAssets / currentLiabilities) > (py_currentAssets / py_currentLiabilities) ? 1 : 0;
-			//7. If no new shares were issued.
-			var sharesOutstandng = wtAvgOutstandingShares <= wtAvgOutstandingShares_py ? 1 : 0;
-			//8. Change in Gross Margin;
-			var gmFS = (curYrGrossProfit / curYrRevenue) > (prYrGrossProfit / prYrRevenue) ? 1 : 0;
-			//9. Change in Asset turnout ratio
-			var atoFS = (curYrRevenue / ((totalAssets + py_totalAsseets) / 2)) > (prYrRevenue / ((py_totalAsseets + py2_totalAsseets) / 2)) ? 1 : 0;
-
-			var score = roaFS + cfoFS + roaDFS + cfoRoaFS + ltdFS + crFS + sharesOutstandng + gmFS + atoFS;
-			return score;
-		}
-
-
-
-		private void GetValuesFromBalanceSheet(out decimal longTermDebt, out decimal totalAssets,
-			out decimal currentAssets, out decimal currentLiabilities,
-			out decimal py_longTermDebt, out decimal py_totalAsseets,
-			out decimal py_currentAssets, out decimal py_currentLiabilities,
-			out decimal py2_totalAsseets)
-		{
-			var bsCurrentFinancials = balanceSheet.Financials.FirstOrDefault();
-			longTermDebt = bsCurrentFinancials.Longtermdebt;
-			totalAssets = bsCurrentFinancials.Totalassets;
-			currentAssets = bsCurrentFinancials.Totalcurrentassets;
-			currentLiabilities = bsCurrentFinancials.Totalcurrentliabilities;
-
-			var bsPriorFinancials = balanceSheet.Financials[OneYearAgo - 1];
-			py_longTermDebt = bsPriorFinancials.Longtermdebt;
-			py_totalAsseets = bsPriorFinancials.Totalassets;
-			py_currentAssets = bsPriorFinancials.Totalcurrentassets;
-			py_currentLiabilities = bsPriorFinancials.Totalcurrentliabilities;
-			py2_totalAsseets = balanceSheet.Financials[LookbackTime - 1].Totalassets;
-		}
-
-		private decimal GetValuesFromCashFlowStatment()
-		{
-			var cfFinancials = cashFlowStatement.Financials.OrderByDescending(r => r.Date).ToList();
-			var cyCashFlowOCF = cfFinancials[0].OperatingCashFlow
-				+ cfFinancials[1].OperatingCashFlow
-				+ cfFinancials[2].OperatingCashFlow
-				+ cfFinancials[3].OperatingCashFlow;
-			return cyCashFlowOCF;
-		}
-
-		private void GetValuesFromIncomeStatement(out decimal curYrRevenue,
-			out decimal prYrRevenue, out decimal curYrGrossProfit,
-			out decimal prYrGrossProfit, out decimal curYrNetIncome,
-			out decimal pyYrNetIncome, out decimal wtAvgOutstandingShares,
-			out decimal wtAvgOutstandingShares_py)
-		{
-			var isCurrentFinancials = incomeStatement.Financials.FirstOrDefault();
-			var finLst = incomeStatement.Financials.OrderByDescending(r => r.Date).ToList();
-			curYrRevenue = finLst[0].Revenue + finLst[1].Revenue + finLst[2].Revenue + finLst[3].Revenue;
-			prYrRevenue = finLst[4].Revenue + finLst[5].Revenue + finLst[6].Revenue + finLst[7].Revenue;
-			curYrGrossProfit = finLst[0].GrossProfit + finLst[1].GrossProfit + finLst[2].GrossProfit + finLst[3].GrossProfit;
-			prYrGrossProfit = finLst[4].GrossProfit + finLst[5].GrossProfit + finLst[6].GrossProfit + finLst[7].GrossProfit;
-			curYrNetIncome = finLst[0].NetIncome + finLst[1].NetIncome + finLst[2].NetIncome + finLst[3].NetIncome;
-			pyYrNetIncome = finLst[4].NetIncome + finLst[5].NetIncome + finLst[6].NetIncome + finLst[7].NetIncome;
-			wtAvgOutstandingShares = finLst[0].WeightedAverageShsOut;
-			wtAvgOutstandingShares_py = finLst[4].WeightedAverageShsOut;
-		}
-``` 			
-
-_**The above cannot be copied and used as the API has been modified and the names have changed. The document will be changed eventually.**_
-
-Values will be obtained from the vendor, Simfin, using its API calls. It is to be noted that Simfin, at the time of writing of this document the vendor has released version 2 of its API calls but we will continue using V1 due to issues with the API. 
-
-In the event, the Vendor does not have ratings for equity its rating will be marked as -1. Vendor ratings will be refreshed no earlier than 15 days. 
-##### Clean up
-Any record that was last computed/refreshed more than 100 days and if has been removed from the index list will be purged. 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEwNzQ5OTE4OTBdfQ==
+eyJoaXN0b3J5IjpbLTM5MTA0ODEwMiwtMTA3NDk5MTg5MF19
 -->
