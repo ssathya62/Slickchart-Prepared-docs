@@ -1545,7 +1545,1061 @@ In this sample we name the component **ButtonCell.razor**:
         }
     }
 ```
-[<- Data annotations](Data_annotations.md) | [Subgrids ->](Subgrids.md)
+## Blazor server-side
+
+# Subgrids
+
+[Index](Documentation.md)
+
+You can enable the subgrids support for your grid. Subgrids allows to view records for those tables that have a 1 to N relationship with the parent table of the main grid.
+
+![](../images/Subgrids.png)
+
+We asume that you already configured the parent grid and it's working as expected as described in the [Quick start](Quick_start.md) section.
+
+We have to add a service method to get rows for subgrids. An example of this type of service is: 
+
+```c#
+    public class OrderService
+    {
+        ...
+
+        public ItemsDTO<OrderDetail> GetOrderDetailsGridRows(Action<IGridColumnCollection<OrderDetail>> columns, 
+            object[] keys, QueryDictionary<StringValues> query)
+        {
+            int orderId;
+            int.TryParse(keys[0].ToString(), out orderId);
+            var repository = new OrderDetailsRepository(_context);
+            var server = new GridServer<OrderDetail>(repository.GetForOrder(orderId), new QueryCollection(query),
+                true, "orderDetailssGrid" + keys[0].ToString(), columns)
+                    .Sortable()
+                    .WithPaging(10)
+                    .Filterable()
+                    .WithMultipleFilters();
+
+            // return items to displays
+            var items = server.ItemsToDisplay;
+            return items;
+        }
+    }
+```
+
+This service method is very similar to the one we used for the main grid. The only difference is that this one has a new parameter named **keys**.
+It is an array of strings with the names of required columns to find records for the subgrid. 
+In our example this array has only one element for the **OrderId** field.
+We use it to get the subgrid rows calling the **GetForOrder** method from the repository.
+
+Note that the grid name parameter we use must be unique for each subgrid. In this example we use the name **"orderDetailsGrid" + keys[0].ToString()**.
+
+
+We have to add the following elements on **OnInitAsync** method of the same razor page we used to render the main grid:
+
+```razor
+    protected override async Task OnInitAsync()
+    {
+        ...
+        
+        Action<IGridColumnCollection<OrderDetail>> orderDetailColumns = c =>
+        {
+            c.Add(o => o.OrderID);
+            c.Add(o => o.ProductID);
+            c.Add(o => o.Product.ProductName);
+            c.Add(o => o.Quantity).Format("{0:F}");
+            c.Add(o => o.UnitPrice).Format("{0:F}");
+        };
+
+        ...
+
+        Func<object[], Task<ICGrid>> subGrids = async keys =>
+        {
+            var subGridQuery = new QueryDictionary<StringValues>();
+            var subGridClient = new GridClient<OrderDetail>(q => orderService.GetOrderDetailsGridRows(orderDetailColumns, keys, q), 
+                subGridQuery, false, "orderDetailsGrid" + keys[0].ToString(), orderDetailColumns, locale)
+                    .SetRowCssClasses(item => item.Quantity > 10 ? "success" : string.Empty)
+                    .Sortable()
+                    .Filterable()
+                    .WithMultipleFilters()
+                    .WithGridItemsCount();
+
+            await subGridClient.UpdateGrid();
+            return subGridClient.Grid;
+        };
+
+    }
+```
+The new 2 elements are:
+- the column defintion for the subgrid 
+- and a function to create the subgrids for each **keys** parameter. It's important to declare all variables needed by the contructor of the **GridClient** object inside the function block to avoid sharing parameters among subgrids. 
+
+Finally we have to modify the **GridClient** we used to create the main grid adding a **SubGrid** method:
+
+```razor
+    protected override async Task OnInitAsync()
+    {
+        ...
+
+        var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(orderColumns, q), query, false,
+            "ordersGrid", orderColumns, locale)
+            .SetRowCssClasses(item => item.Customer.IsVip ? "success" : string.Empty)
+            .Sortable()
+            .Filterable()
+            .WithMultipleFilters()
+            .Searchable(true, false)
+            .WithGridItemsCount()
+            .SubGrid(subGrids, ("OrderID","OrderID"));
+
+    }
+```
+
+## SubGrid parameters
+
+Parameter | Type | Description
+--------- | ---- | -----------
+subGrids | Func<object[], Task<ICGrid>> | function that creates subgrids defined in the step before
+allOpended | bool (optional) | boolean to configure if all subgrids are opened or closed when the grid is initialized or updated. The default value is false.
+keys | params (string, string)[] | variable number of tuples of strings with the names of required columns to find records for the subgrid (foreign keys). The first value of the tuple is the name of property of the parent grid and the second value is the name of property of the child grid.
+
+## Blazor server-side
+
+# Passing grid state as parameter
+
+[Index](Documentation.md)
+
+You can get the current grid state any time.
+Grid state contains the page number and all filter, searching and sorting information.
+
+So you can pass it as a parameter to another page, for example it you want to edit a row of the grid.
+Then you can pass it back to the page containing the grid, so the grid can be created in the same state as it was left.
+
+Some of these examples are showed in the [GridBlazorServerSide project](https://github.com/gustavnavar/Grid.Blazor/tree/master/GridBlazorServerSide)
+
+## Get grid state and pass it to another page
+
+* The easiest way to send the grid state to another page is creating a custom column with a button, as seen in [Render button, checkbox, etc. in a grid cell](Render_button_checkbox_etc_in_a_grid_cell.md):
+    ```razor
+        @page "/gridsample"
+        @using GridBlazor
+        @using GridShared
+        @using GridShared.Utility
+        @using Microsoft.Extensions.Primitives
+        @inject OrderService orderService
+
+        @if (_task.IsCompleted)
+        {
+            <GridComponent T="Order" Grid="@_grid"></GridComponent>
+        }
+        else
+        {
+            <p><em>Loading...</em></p>
+        }
+
+        @code
+        {
+            private CGrid<Order> _grid;
+            private Task _task;
+
+            protected override async Task OnInitAsync()
+            {
+                Action<IGridColumnCollection<Order>> columns = c =>
+                {
+                    c.Add().Encoded(false).Sanitized(false).RenderComponentAs<ButtonCell>();
+                    c.Add(o => o.OrderID);
+                    c.Add(o => o.OrderDate, "OrderCustomDate").Format("{0:yyyy-MM-dd}");
+                    c.Add(o => o.Customer.CompanyName);
+                    c.Add(o => o.Customer.IsVip);
+                };
+
+                var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns)
+                _grid = client.Grid;
+
+                // Set new items to grid
+                _task = client.UpdateGrid();
+                await _task;
+            }
+        }
+    ```
+
+    Then the **ButtonCell** has to implement the **ICustomGridComponent** interface.
+The **GetState** method of the optional **Grid** parameter must be called to get the grid state:
+    ```razor
+        @using GridBlazor
+        @using GridBlazorServerSide.Models
+        @using GridShared.Columns
+        @implements ICustomGridComponent<Order>
+        @inject IUriHelper UriHelper
+
+        <button class='btn btn-sm btn-primary' @onclick="MyClickHandler">Edit</button>
+
+        @code {
+            [Parameter]
+            public Order Item { get; protected set; }
+
+            [Parameter]
+            public CGrid<Order> Grid { get; protected set; }
+
+            private void MyClickHandler(UIMouseEventArgs e)
+            {
+                string gridState = Grid.GetState();
+                UriHelper.NavigateTo($"/editorder/{Item.OrderID.ToString()}/gridsample/{gridState}");          
+            }
+        }
+    ```
+
+* In the case of a page containing more than one grid, the **ButtonCell** component must call a parent component function to pass more than one state.
+The call of the **RenderComponentAs** method must contain a list of Actions including just one element, the method used to call the new page:
+    ```razor
+        ...
+
+        @code
+        {
+            ...
+
+            protected override async Task OnParametersSetAsync()
+            {
+                ...
+
+                Action<IGridColumnCollection<Order>> oColumns = c =>
+                {
+                    c.Add().Encoded(false).Sanitized(false).RenderComponentAs<ButtonCell>(new List<Action<object>>() { MyAction });
+                    c.Add(o => o.OrderID);
+                    c.Add(o => o.OrderDate, "OrderCustomDate").Format("{0:yyyy-MM-dd}");
+                    c.Add(o => o.Customer.CompanyName);
+                    c.Add(o => o.Customer.IsVip);
+                };
+
+                var oClient = new GridClient<Order>(q => orderService.GetOrdersGridRows(oColumns, q), query, false, "ordersGrid", oColumns)
+                _grid = oClient.Grid;
+
+                // Set new items to grid
+                _task2 = oClient.UpdateGrid();
+                await _task2;
+            }
+
+            private void MyAction(object item)
+            {
+                string ordersGridState = _ordersGrid.GetState();
+                string customersGridState = _customersGrid.GetState();
+                UriHelper.NavigateTo($"/editorder/{((Order)item).OrderID.ToString()}/multiplegrids/{ordersGridState}/{customersGridState}");
+            }
+        }
+    ```
+
+    Then the **ButtonCell** has to implement the **ICustomGridComponent** interface. And the **Actions** parameter must be defined:
+    ```razor
+        @using GridBlazor
+        @using GridBlazorServerSide.Models
+        @using GridShared.Columns
+        @implements ICustomGridComponent<Order>
+
+        <button class='btn btn-sm btn-primary' @onclick="MyClickHandler">Edit</button>
+
+        @code {
+            [Parameter]
+            public Order Item { get; protected set; }
+
+            [Parameter]
+            public IList<Action<object>> Actions { get; protected set; }
+
+            private void MyClickHandler(UIMouseEventArgs e)
+            {
+                Actions[0]?.Invoke(Item);      
+            }
+        }
+    ```
+
+## Initializing grid with a state passed from another page
+
+The page containing the grid must get the grid state parameter from the url.
+* If the grid state parameter is not null or empty you have to create a **QueryCollection** object from the parameter.
+* If the grid state parameter is null or empty you must use a new **QueryDictionary<StringValues>**.
+
+The static method **StringExtensions.GetQuery** will convert the string to a **Dictionary<string, StringValues>** object that will be used in the **GridClient** contructor:
+```razor
+    @page "/gridsample"
+    @page "/gridsample/{GridState}"
+
+    ...
+
+    [Parameter]
+    protected string GridState { get; set; }
+
+    @code
+    {
+        ...
+
+        protected override async Task OnInitAsync()
+        {
+            ...
+            var query = new QueryDictionary<StringValues>();
+            if (!string.IsNullOrWhiteSpace(GridState))
+            {
+                try
+                {
+                    query = StringExtensions.GetQuery(GridState);
+                }
+                catch (Exception)
+                {
+                    // do nothing, GridState was not a valid state
+                }
+            }
+
+            var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q),
+                query, false, "ordersGrid", columns, locale)
+            ...
+        }
+    }
+```
+
+If the page contains more than one grid you have to use 2 parameters, one for each grid.
+
+## Blazor server-side
+
+# CRUD
+
+[Index](Documentation.md)
+
+GridBlazor supports CRUD forms to add, edit, view and delete items for Blazor server-side projects.
+
+These are the supported features:
+- Full screen forms
+- Auto-generated forms with field type detection based on column definition
+- Lists for drop-drown fields
+- Custom forms
+- Support of grid models including 1:N relationships
+- Support of entities with multiple foreign keys
+- Direct URLs
+
+## Auto-generated forms
+
+You can enable CRUD using the **Crud(bool enabled, ICrudDataService<T> crudDataService)** method of the **GridClient** object:
+```c#   
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(ColumnCollections.OrderColumns, q),
+        query, false, "ordersGrid", ColumnCollections.OrderColumns, locale)
+        .Crud(true, orderService)
+```
+
+You can also enable CRUD depending on a condition for each row using the **Crud(bool createEnabled, Func<T, bool> enabled, ICrudDataService<T> crudDataService)** method:
+```c#   
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(ColumnCollections.OrderColumns, q),
+        query, false, "ordersGrid", ColumnCollections.OrderColumns, locale)
+        .Crud(true, r => r.Customer.IsVip, orderService)
+```
+The create form can only be enabled using a ```bool``` parameter. But the read, update and delete forms can be enabled using a function that returns a ```bool```.
+
+**Note**: All 4 crud forms can be enabled at the same time with the former methods, but you can enable one by one using ```Crud(bool create, bool read, bool update, bool delete, ICrudDataService<T> crudDataService)``` or ```Crud(bool createEnabled, Func<T, bool> readEnabled, Func<T, bool> updateEnabled, Func<T, bool> deleteEnabled, ICrudDataService<T> crudDataService)``` methods.
+
+The parameter **crudDataService** of the **Crud** method must be a class that implements the **ICrudDataService<T>** interface. This interface has 4 methods:
+- ```Task<T> Get(params object[] keys);```
+- ```Task Insert(T item);```
+- ```Task Update(T item);```
+- ```Task Delete(params object[] keys);```
+one for each CRUD operation.
+
+This is an example of those 4 methods:
+```c#
+    public async Task<Order> Get(params object[] keys)
+    {
+        using (var context = new NorthwindDbContext(_options))
+        {
+           int orderId;
+           int.TryParse(keys[0].ToString(), out orderId);
+           var repository = new OrdersRepository(context);
+           return await repository.GetById(orderId);
+        }
+    }
+
+    public async Task Insert(Order item)
+    {
+        using (var context = new NorthwindDbContext(_options))
+        {
+            var repository = new OrdersRepository(context);
+            await repository.Insert(item);
+            repository.Save();
+        }
+    }
+
+    public async Task Update(Order item)
+    {
+        using (var context = new NorthwindDbContext(_options))
+        {
+            var repository = new OrdersRepository(context);
+            await repository.Update(item);
+            repository.Save();
+        }
+    }
+
+    public async Task Delete(params object[] keys)
+    {
+        using (var context = new NorthwindDbContext(_options))
+        {
+            var order = await Get(keys);
+            var repository = new OrdersRepository(context);
+            repository.Delete(order);
+            repository.Save();
+        }
+    }
+```
+
+The best way to avoid threading and cache issues for Blazor Server App projects is to create a DbContext inside each method with **using**. 
+Dependency injection for DbContext can produce threading and cache issues.
+
+### Column definition
+
+The column definition must include the primary keys:
+- using the **SetPrimaryKey(true)** method for columns with auto-generated keys, or
+- using the **SetPrimaryKey(true, false)** method for columns with manually generated keys, or
+- using the **SetPrimaryKey(true).SetSelectField(...)**  method for columns with keys selected from a list
+
+If the grid model includes foreign keys, the column definition should include them using the **SetSelectField** in order to get the options for the ```<select>``` element.
+
+The **SetSelectField** method has 3 required parameters:
+Parameter | Description
+--------- | -----------
+enabled | boolean to configure if the field is shown as a ```<select>``` html element
+expression | function to get the selected value for update and delete forms (it must return an string value)
+selectItemExpr | function to get the values and titles to be shown in the drop-down of create and update forms (it must return an ```IEnumerable<SelectItem>```)
+
+The type of fields currently supported as foreign keys are:
+- string
+- DateTime
+- DateTimeOffset
+- TimeSpan
+- Int16
+- Int32
+- Int64
+- UInt16
+- UInt32
+- UInt64
+- Byte
+- Single
+- Double
+- Decimal
+- bool
+- Guid
+- enums
+- custom types using a [type converter](https://docs.microsoft.com/en-us/dotnet/api/system.componentmodel.typeconverter)
+
+This is an example of function to get values and title for a drop-down:
+
+```c#
+    public IEnumerable<SelectItem> GetAllEmployees()
+    {
+       using (var context = new NorthwindDbContext(_options))
+       {
+           EmployeeRepository repository = new EmployeeRepository(context);
+           return repository.GetAll()
+               .Select(r => new SelectItem(r.EmployeeID.ToString(), r.EmployeeID.ToString() + " - " 
+                  + r.FirstName + " " + r.LastName))
+               .ToList();
+        }
+   }
+```
+
+As explained for the 4 CRUD methods, the best way to avoid threading and cache issues for Blazor Server App projects is to create a DbContext inside the function with **using**. 
+
+Other fields that you want to be shown as dropdowns with a closed list can also be configured with the ```SetSelectField``` method.
+
+All fields to be included in the CRUD forms but not in the grid as columns should be configured as hidden (e.g. ```Add(o => o.RequiredDate, true)```).
+
+Boolean columns are shown as checkboxes on CRUD forms by default. But they can also be shown as sliders using the ```SetToggleSwitch``` method in the column definition (e.g. ````SetToggleSwitch(true, "Yes", "No")```).
+The ```SetToggleSwitch``` method has 3 required parameters:
+Parameter | Description
+--------- | -----------
+enabled | boolean to configure if the boolean field is shown as a slider
+trueLabel | optional string to define the checked value label
+falseLabel | optional string to define the unchecked value label
+
+All columns required to be included in the Update form as **read only** should be configured using the ```SetReadOnlyOnUpdate(true)``` method.
+
+If a column is a date that has to be shown as ```date```, ```time```, ```week```, ```month``` or ```datetime-local``` in the CRUD forms, the column definition should use the  **SetInputType** method in order to get the correct format.
+
+If a column is a string that has to be shown as ```<textarea>``` in the CRUD forms, the column definition should use the  **SetInputType** method in order to get the correct html element.
+
+The **SetInputType** method has 1 required parameter:
+Parameter | Description
+--------- | -----------
+inputType | ```InputType``` enum. Its value can be ```InputType.TextArea```, ```InputType.Date```, ```InputType.Time```, ```InputType.Month```, ```InputType.Week``` or ```InputType.DateTimeLocal```
+
+You can also add components on the CRUD forms using the ```RenderCrudComponentAs<TComponent>``` method. You must define these columns as **Hidden** to show them just on CRUD forms.
+
+You can configure the width of the column input element using the ```SetCrudWidth(int width)``` and ```SetCrudWidth(int width, int labelWidtth)``` methods. The default value for the column width is 5 and and for the label width is 2. You can configure them from 1 to 11, but the sum of both can not be more than 12.
+
+And finally all columns included in the grid but not in the CRUD forms should be configured as "CRUD hidden" using the ```SetCrudHidden(true)``` method.
+
+**Notes**: 
+- You can have more granularity in the "CRUD hidden" configuration. You can use the ```SetCrudHidden(bool create, bool read, bool update, bool delete)``` method to configure the columns that will be hidden on each type of form.
+- You can have more granularity in the components configuration.  You can use the ```RenderCrudComponentAs<TCreateComponent, TReadComponent, TUpdateComponent, TDeleteComponent>``` method to configure the components that will be shown on each type of form. Id you don't want to show any component for a specific type of form you must use ```NullComponent```
+
+This is an example of column definition:
+
+```c#
+    Action<IGridColumnCollection<Order>> columns = c =>
+    {
+        c.Add(o => o.OrderID).SetPrimaryKey(true);
+        c.Add(o => o.CustomerID, true).SetSelectField(true, o => o.Customer.CustomerID + " - " + o.Customer.CompanyName,
+            customerService.GetAllCustomers);
+        c.Add(o => o.EmployeeID, true).SetSelectField(true, o => o.Employee.EmployeeID.ToString() 
+            + " - " + o.Employee.FirstName + " " + o.Employee.LastName, employeeService.GetAllEmployees);
+        c.Add(o => o.ShipVia, true).SetSelectField(true, o => o.Shipper == null ? "" : o.Shipper.ShipperID.ToString() 
+            + " - " + o.Shipper.CompanyName, shipperService.GetAllShippers);
+        c.Add(o => o.OrderDate, "OrderCustomDate").Titled(SharedResource.OrderCustomDate).Format("{0:yyyy-MM-dd}").SetCrudWidth(3);
+        c.Add(o => o.Customer.CompanyName).Titled(SharedResource.CompanyName).SetReadOnlyOnUpdate(true);
+        c.Add(o => o.Customer.ContactName).Titled(SharedResource.ContactName).SetCrudHidden(true);
+        c.Add(o => o.Freight).Titled(SharedResource.Freight).Format("{0:F}");
+        c.Add(o => o.Customer.IsVip).Titled(SharedResource.IsVip).RenderValueAs(o => o.Customer.IsVip ? "Yes" : "No").SetCrudHidden(true);
+        c.Add(o => o.RequiredDate, true).Format("{0:yyyy-MM-dd}").SetCrudWidth(3);
+        c.Add(o => o.ShippedDate, true).Format("{0:yyyy-MM-dd}").SetCrudWidth(3);
+        c.Add(o => o.ShipName, true);
+        c.Add(o => o.ShipAddress, true);
+        c.Add(o => o.ShipCity, true);
+        c.Add(o => o.ShipPostalCode, true);
+        c.Add(o => o.ShipRegion, true);
+        c.Add(o => o.ShipCountry, true);
+    };
+```
+
+This is an example of a grid using CRUD:
+
+![](../images/Crud.png)
+
+And this is an auto-genereated edit form:
+
+![](../images/Crud_edit.png)
+
+## File type columns
+
+If you need to upload files on the CRUD forms, you have to use a not connected, named and hidden colum. The column definition should use the  **SetInputFileType** method in order to get the correct html element.
+```c#   
+    c.Add(true, "PhotoFile").Titled("Photo").SetInputFileType();   
+```
+
+The **SetInputFileType** method has 1 optional parameter:
+Parameter | Description
+--------- | ----------
+multiple | Its a boolean to configure if the input element can upload multiple files
+
+You must also configure CRUD using the **Crud(bool enabled, ICrudDataService<T> crudDataService, ICrudFileService<T> crudFileService)** method of the **GridClient** object:
+```c#   
+    var client = new GridClient<Employee>(q => employeeService.GetEmployeesGridRows(ColumnCollections.EmployeeColumns, q),
+        query, false, "employeesGrid", ColumnCollections.EmployeeColumns, locale)
+        .Crud(true, employeeService, employeeFileService);           
+```
+
+The parameter **crudFileService** of the **Crud** method must be a class that implements the **ICrudFileService<T>** interface. This interface has 3 methods:
+- ```Task InsertFiles(T item, IQueryDictionary<IFileListEntry[]> files);```
+- ```Task<T> UpdateFiles(T item, IQueryDictionary<IFileListEntry[]> files);```
+- ```Task DeleteFiles(params object[] keys);```
+
+These methods will be responsible to perform all file operations either on a server file repository, or a database or a cloud service as Azure Blob Storage or Amazon S3.
+
+And finally you have to load this ```javascript``` on the html page:
+```
+    <script src="_content/Agno.BlazorInputFile/inputfile.js"></script>
+```
+
+**Notes:**
+- ```InsertFiles``` method will be executed after inserting the new record on the database. So it's executed after the ```Insert``` method of your ```ICrudDataService<T>``` implementation. This will ensure the record includes the primary keys in case of auto-generated ones. If the ```InsertFiles``` method does any modification to the record that requires to be applied to the database, it will no be automatically updated. So you will have to call the ```Update``` method of your ```ICrudDataService<T>``` implementation from the ```InsertFiles``` method.
+- ```UpdateFiles``` method will be executed before updating the record on the database. So it's executed bofore the ```Update``` method of your ```ICrudDataService<T>``` implementation. If the ```UpdateFiles``` method does any modification to the record, it will be automatically updated on the database.
+- ```DeleteFiles``` method will be executed before deleting the record on the database. So it's executed bofore the ```Delete``` method of your ```ICrudDataService<T>``` implementation.
+
+You can see how it works clicking on the "Employees" button of this sample https://gridblazor.azurewebsites.net/embedded
+
+## Code confirmation to perform CRUD
+
+CRUD forms can include a code confirmation feature to make the create, update and delete more secure. 
+
+If you enable this feature, two fields are added at the end of the form:
+- the first one includes a randomly generated string
+- the second one is empty and the user must enter the same value of the first field to be able to save any item modification 
+
+You can configure this feature using the ```SetCreateConfirmation```, ```SetUpdateConfirmation``` and ```SetDeleteConfirmation``` of the ```GridClient``` object.
+These method have the following parameters:
+Parameter | Type | Description
+--------- | ---- | -----------
+enabled | bool | it enables code confirmation
+width | int (optional) | number to configure the input element width. The default value is 5
+labelWidth | int (optional) | number to configure the label element width. The default value is 2
+
+You can enable this feature as followw:
+```c#
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns, locale)
+        .Crud(true, orderService)
+        .SetCreateConfirmation(true)
+        .SetUpdateConfirmation(true)
+        .SetDeleteConfirmation(true);
+```
+
+## CRUD button labels
+
+```GridBlazor``` uses buttons with a background image by default. You can change these images overriding their styles. But you can also use text labels. 
+
+You will have to use the ```SetCrudButtonLabels``` method of the ```GridClient``` object for this:
+```c#
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns, locale)
+        .Crud(true, orderService)
+        .SetCrudButtonLabels("Add", "View", "Edit", "Delete");
+```
+
+## CRUD form labels
+
+You can change the default CRUD form titles using the ```SetCrudFormLabels``` method of the ```GridClient``` object for this:
+```c#
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns, locale)
+        .Crud(true, orderService)
+        .SetCrudFormLabels("Add Order", "View Order", "Edit Order", "Delete Order");
+```
+
+## CRUD buttons on the grid header
+
+You can have the all the CRUD buttons on the grid header instead of the grid rows. If you decide to use this layout you must configure the grid to allow row selection. Once you selects one row you can click on the "Edit", "View" and "Delete" buttons of the header.
+
+The configuration for this type of grid is as follows:
+
+```c#
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns, locale)
+        .Selectable(true)
+        .Crud(true, orderService)
+        .SetHeaderCrudButtons(true);
+```
+
+This is an example of grid with CRUD buttons on the header:
+
+![](../images/Crud_header_button.png)
+
+You can also use text labels for the header buttons. In this the configuration is as follows:
+
+```c#
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns, locale)
+        .Selectable(true)
+        .Crud(true, orderService)
+        .SetHeaderCrudButtons(true);
+        .SetCrudButtonLabels("Add", "View", "Edit", "Delete");
+```
+
+## Custom forms (Optional)
+
+If you want to use custom forms you can enable them using the **SetCreateComponent**, **SetReadComponent**, **SetUpdateComponent** and **SetDeleteComponent**  methods of the **GridClient** object:
+
+```c#
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", columns, locale)
+        .Crud(true, orderService)
+        .SetCreateComponent<OrderCreateComponent>()
+        .SetReadComponent<OrderReadComponent>()
+        .SetUpdateComponent<OrderUpdateComponent>()
+        .SetDeleteComponent<OrderDeleteComponent>();
+```
+
+You can define all custom forms or just some of them. If you don't define a custom form for one of the enabled operations an auto-generated form will be used instead.
+
+And finally you will have to create a Blazor component for the custom form. This is an example of edit form:
+
+```razor
+@using GridBlazor
+@using GridBlazor.Resources
+@using GridBlazorServerSide.Models
+@inherits GridUpdateComponentBase<Order>
+
+<h1>@Strings.Add Order</h1>
+<EditForm Model="@Item" OnValidSubmit="@UpdateItem">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label for="OrderID" class="control-label col-md-2">OrderID: </label>
+            <div class="col-md-5">
+                <InputNumber id="OrderID" class="form-control" readonly="readonly" @bind-Value="Item.OrderID" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="CustomerID" class="control-label col-md-2">Customer Id: </label>
+            <div class="col-md-5">
+                <InputText id="CustomerID" class="form-control" @bind-Value="Item.CustomerID" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="EmployeeID" class="control-label col-md-2">Employee Id: </label>
+            <div class="col-md-5">
+                <InputNumber id="EmployeeID" class="form-control" @bind-Value="Item.EmployeeID" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ShipVia" class="control-label col-md-2">Ship Via: </label>
+            <div class="col-md-5">
+                <InputNumber id="ShipVia" class="form-control" @bind-Value="Item.ShipVia" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="RequiredDate" class="control-label col-md-2">Required Date: </label>
+            <div class="col-md-5">
+                <InputDate id="RequiredDate" class="form-control" @bind-Value="Item.RequiredDate" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ShippedDate" class="control-label col-md-2">Shipped Date: </label>
+            <div class="col-md-5">
+                <InputDate id="ShippedDate" class="form-control" @bind-Value="Item.ShippedDate" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ShipName" class="control-label col-md-2">Ship Name: </label>
+            <div class="col-md-5">
+                <InputText id="ShipName" class="form-control" @bind-Value="Item.ShipName" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ShipAddress" class="control-label col-md-2">Ship Address: </label>
+            <div class="col-md-5">
+                <InputText id="ShipAddress" class="form-control" @bind-Value="Item.ShipAddress" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ShipCity" class="control-label col-md-2">Ship City: </label>
+            <div class="col-md-5">
+                <InputText id="ShipCity" class="form-control" @bind-Value="Item.ShipCity" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ShipPostalCode" class="control-label col-md-2">Ship Postal Code: </label>
+            <div class="col-md-5">
+                <InputText id="ShipPostalCode" class="form-control" @bind-Value="Item.ShipPostalCode" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ShipRegion" class="control-label col-md-2">Ship Region: </label>
+            <div class="col-md-5">
+                <InputText id="ShipRegion" class="form-control" @bind-Value="Item.ShipRegion" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ShipCountry" class="control-label col-md-2">Ship Country: </label>
+            <div class="col-md-5">
+                <InputText id="ShipCountry" class="form-control" @bind-Value="Item.ShipCountry" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="Freight" class="control-label col-md-2">Freight: </label>
+            <div class="col-md-5">
+                <input id="Freight" name="Freight" class="form-control" @bind="Item.Freight" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-5">
+                <button type="submit" class="btn btn-primary btn-md">@Strings.Save</button>
+                <button type="button" class="btn btn-primary btn-md" @onclick="BackButtonClicked">@Strings.Back</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+``` 
+
+**Note**: The Blazor component must be to inherited from the **GridUpdateComponentBase<T>** class.
+
+If you want to use a drop-down list for a field you have to define it as it was for auto-generated forms.
+
+## Direct URLs
+
+You can configure a direct route to an specific CRUD form. The first step is to roure alternative routes as follows:
+
+```c#
+@page "/crud"
+@page "/crud/{OrderId}/{Mode}"
+```
+
+Then you have to create and initialize the following parameters:
+- ```GridMode ``` for the type of CRUD form
+- ```object[]``` for the primary keys of the row to be shown on the form 
+
+This is an example of these parameters initialization:
+
+```c#
+@code
+{
+    ...
+
+    private object[] _keys;
+    private GridMode _mode;
+    
+    ...
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var locale = CultureInfo.CurrentCulture;
+        SharedResource.Culture = locale;
+
+        var query = new QueryDictionary<StringValues>();
+
+        Action<IGridColumnCollection<Order>> columns = c => ColumnCollections.OrderColumnsWithCrud(c,
+            customerService.GetAllCustomers, employeeService.GetAllEmployees, shipperService.GetAllShippers);
+        var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q),
+            query, false, "ordersGrid", columns, locale)
+            .Sortable()
+            .Filterable()
+            .SetStriped(true)
+            .Crud(true, orderService)
+            .WithMultipleFilters()
+            .WithGridItemsCount();
+
+        _grid = client.Grid;
+
+        if (!string.IsNullOrWhiteSpace(OrderId))
+        {
+            int orderId;
+            bool result = int.TryParse(OrderId, out orderId);
+            if (result)
+            {
+                if (Mode.ToLower() == "create")
+                {
+                    _keys = new object[] { orderId };
+                    _mode = GridMode.Create;
+                }
+                else if (Mode.ToLower() == "read")
+                {
+                    _keys = new object[] { orderId };
+                    _mode = GridMode.Read;
+                }
+                else if (Mode.ToLower() == "update")
+                {
+                    _keys = new object[] { orderId };
+                    _mode = GridMode.Update;
+                }
+                else if (Mode.ToLower() == "delete")
+                {
+                    _keys = new object[] { orderId };
+                    _mode = GridMode.Delete;
+                }
+            }
+        }
+
+        // Set new items to grid
+        _task = client.UpdateGrid();
+        await _task;
+    }
+
+    ...
+```
+
+And finaly you have to pass the paramenters initialized before to the ```GridComponent```
+
+```c#
+<GridComponent T="Order" Grid="@_grid" Mode="_mode" Keys="_keys"></GridComponent>
+``` 
+
+## Blazor server-side
+
+# Nested CRUD
+
+[Index](Documentation.md)
+
+GridBlazor supports subgrids in CRUD forms. Aside to edit, view and delete fields for an grid item using CRUD, you can add subgrids on the CRUD forms. 
+And these subgrids can also be configured with CRUD support, so you can add, edit, view and delete items that have a 1:N relationship with the parent item.
+
+### Column definition
+
+First off, all the column definition of the main grid must include the ```SubGrid``` method for those columns that have a 1:N relationship. 
+
+```c#
+    c.Add(o => o.OrderDetails).Titled("Order Details").SubGrid(subgrid, ("OrderID", "OrderID"));
+```
+
+If you have more that one subgrid in the CRUD form, you can show all them on a tab group. In this case you have to use an additional paramenter in the ```SubGrid``` method:
+
+```c#
+    c.Add(o => o.OrderDetails).Titled("Order Details").SubGrid("tabGroup1", subgrid, ("OrderID", "OrderID"));
+```
+
+These are the paraments of the ```Subgrid``` method:
+
+Parameter name | Type | Description 
+-------------- | ---- | -----------
+TabGroup (optional) | ```string``` | Name of the tab group that will show all the subgrids
+SubGrids | ```Func<object[], bool, bool, bool, bool, Task<IGrid>>``` | a funtion that will create the subgrid for each item column
+Keys | ```params (string, string)[]``` | this array contains pairs of strings with the names of the columns that define the 1:N relationship for both tables
+
+### Subgrid definition for the CRUD form
+
+Then you have to define the subgrid that you want to show on the CRUD forms.
+
+```c#
+    Func<object[], bool, bool, bool, bool, Task<IGrid>> subGrids = async (keys, create, read, update, delete) =>
+    {
+        var subGridQuery = new QueryDictionary<StringValues>();
+
+        Action<IGridColumnCollection<OrderDetail>> subGridColumns = c => ColumnCollections.OrderDetailColumnsCrud(c,
+            productService.GetAllProducts);
+
+        var subGridClient = new GridClient<OrderDetail>(q => orderDetailService.GetOrderDetailsGridRows(subGridColumns, keys, q),
+            subGridQuery, false, "orderDetailsGrid" + keys[0].ToString(), subGridColumns, locale)
+                .Sortable()
+                .Filterable()
+                .SetStriped(true)
+                .Crud(create, read, update, delete, orderDetailService)
+                .WithMultipleFilters()
+                .WithGridItemsCount();
+
+        await subGridClient.UpdateGrid();
+        return subGridClient.Grid;
+    };
+```
+This function is passed as parameter of the ```Subgrid``` method used on the first step. Of course subgrids must be configured with CRUD support using the ```Crud()``` method of the ```GridClient``` object.
+
+## Showing the Update form just after inserting a row
+
+You can configure CRUD to show the Update form just after inserting a new row with the Create form. 
+It make sense to do it when you have nested grids and you want to create rows for the nested subgrid in the same step as creating the parent row.
+You can do it using the ```SetEditAfterInsert``` method of the ```GridClient``` object
+
+The configuration for this type of grid is as follows:
+
+```c#
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(ColumnCollections.OrderColumns, q),
+            query, false, "ordersGrid", ColumnCollections.OrderColumns, locale)
+        .Crud(true, orderService)
+        .SetEditAfterInsert(true);
+```
+
+## Hiding the parent CRUD form buttons when opening a child CRUD form
+
+When you have 2 nested CRUD forms, "Save" and "Back" buttons for both forms are shown on the screen by default. 
+This can cause some problems for users not knowing which "Save" or "Back" button to press.
+You can avoid it hidding the parent CRUD form buttons, so the user has to save or close the child form before doing any action on the parent form.
+
+In order to get this behavior you have to configure the following events for child grid:
+- AfterCreateForm: call a function to hide the parent form buttons
+- AfterReadForm: call a function to hide the parent form buttons
+- AfterUpdateForm: call a function to hide the parent form buttons
+- AfterDeleteForm: call a function to hide the parent form buttons
+- AfterInsert: call a function to show the parent form buttons
+- AfterUpdate: call a function to show the parent form buttons
+- AfterDelete: call a function to show the parent form buttons
+- AfterBack: call a function to show the parent form buttons
+
+Events are explained in more detail in the [next section](Events.md)
+
+You can hide or show CRUD form buttons using the ```ShowCrudButtons``` and ```HideCrudButtons``` methods of the parent ```GridComponent``` object.
+
+This is an example implementing this feature:
+
+```c#
+<GridComponent @ref="_gridComponent" T="Order" Grid="@_grid"></GridComponent>
+
+@code
+{
+    private GridComponent<Order> _gridComponent;
+    private bool _areEventsLoaded = false;
+    ...
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var locale = CultureInfo.CurrentCulture;
+        SharedResource.Culture = locale;
+
+        Func<object[], bool, bool, bool, bool, Task<IGrid>> subGrids = async (keys, create, read, update, delete) =>
+        {
+            var subGridQuery = new QueryDictionary<StringValues>();
+
+            Action<IGridColumnCollection<OrderDetail>> subGridColumns = c => ColumnCollections.OrderDetailColumnsCrud(c,
+                productService.GetAllProducts);
+
+            var subGridClient = new GridClient<OrderDetail>(q => orderDetailService.GetOrderDetailsGridRows(subGridColumns, keys, q),
+                subGridQuery, false, "orderDetailsGrid" + keys[0].ToString(), subGridColumns, locale)
+                    .Sortable()
+                    .Filterable()
+                    .SetStriped(true)
+                    .Crud(create, read, update, delete, orderDetailService)
+                    .WithMultipleFilters()
+                    .WithGridItemsCount()
+                    .AddToOnAfterRender(OnAfterOrderDetailRender);
+
+            await subGridClient.UpdateGrid();
+            return subGridClient.Grid;
+        };
+
+        var query = new QueryDictionary<StringValues>();
+
+        Action<IGridColumnCollection<Order>> columns = c => ColumnCollections.OrderColumnsWithNestedCrud(c,
+            customerService.GetAllCustomers, employeeService.GetAllEmployees, shipperService.GetAllShippers, subGrids);
+
+        var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q),
+            query, false, "ordersGrid", columns, locale)
+            .Sortable()
+            .Filterable()
+            .SetStriped(true)
+            .Crud(true, orderService)
+            .WithMultipleFilters()
+            .WithGridItemsCount();
+
+        _grid = client.Grid;
+
+        // Set new items to grid
+        _task = client.UpdateGrid();
+        await _task;
+    }
+
+    private async Task OnAfterOrderDetailRender(GridComponent<OrderDetail> gridComponent, bool firstRender)
+    {
+        if (firstRender)
+        {
+            gridComponent.AfterInsert += AfterInsertOrderDetail;
+            gridComponent.AfterUpdate += AfterUpdateOrderDetail;
+            gridComponent.AfterDelete += AfterDeleteOrderDetail;
+            gridComponent.AfterBack += AfterBack;
+
+            gridComponent.AfterCreateForm += AfterFormOrderDetail;
+            gridComponent.AfterReadForm += AfterFormOrderDetail;
+            gridComponent.AfterUpdateForm += AfterFormOrderDetail;
+            gridComponent.AfterDeleteForm += AfterFormOrderDetail;
+
+            await Task.CompletedTask;
+        }
+    }
+
+    private async Task AfterInsertOrderDetail(GridCreateComponent<OrderDetail> component, OrderDetail item)
+    {
+        _gridComponent.ShowCrudButtons();
+        await Task.CompletedTask;
+    }
+
+    private async Task AfterUpdateOrderDetail(GridUpdateComponent<OrderDetail> component, OrderDetail item)
+    {
+        _gridComponent.ShowCrudButtons();
+        await Task.CompletedTask;
+    }
+
+    private async Task AfterDeleteOrderDetail(GridDeleteComponent<OrderDetail> component, OrderDetail item)
+    {
+        _gridComponent.ShowCrudButtons();
+        await Task.CompletedTask;
+    }
+
+    private async Task AfterBack(GridComponent<OrderDetail> component, OrderDetail item)
+    {
+        _gridComponent.ShowCrudButtons();
+        await Task.CompletedTask;
+    }
+
+    private async Task AfterFormOrderDetail(GridComponent<OrderDetail> gridComponent, OrderDetail item)
+    {
+        _gridComponent.HideCrudButtons();
+        await Task.CompletedTask;
+    }
+}
+```
+
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjQ0MTE1NTIsLTEwNzQ5OTE4OTBdfQ==
+eyJoaXN0b3J5IjpbNDM5OTU2Nzk0LC0xMDc0OTkxODkwXX0=
 -->
