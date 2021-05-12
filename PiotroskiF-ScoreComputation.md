@@ -1151,7 +1151,401 @@ Follow thes steps to create a custom filter widget:
     ```
     You have to use the same unique name used on the step 2.
 
-[<- Using a date time filter](Using_datetime_filter.md) | [Setup initial column filtering ->](Setup_initial_column_filtering.md)
+## Blazor server-side
+
+# Setup initial column filtering
+
+[Index](Documentation.md)
+
+Sometimes you need to setup initial column filtering, just after the grid is first time loaded. After that a user can use this pre-filtered grid or clear/change filter settings.
+
+You can do this, using the **SetInitialFilter** method:
+
+```c#
+    columns.Add(o => o.Customer.CompanyName)
+        .Titled("Company Name")
+        .ThenSortByDescending(o => o.OrderID)
+        .SetInitialFilter(GridFilterType.StartsWith, "a")
+```
+
+## Blazor server-side
+
+# Localization
+
+[Index](Documentation.md)
+
+English is the default laguage. But you can use other languages. You have to create a **CultureInfo** on the razor page and pass it as parameter in the contructor of the **GridClient** object:
+    
+```c#
+    var locale = new CultureInfo("de-DE");
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", Columns, locale);
+```
+
+## Supported languages
+
+* English (default)
+* German
+* French
+* Italian
+* Russian
+* Spanish
+* Norwegian
+* Turkish
+* Czech
+* Slovenian
+* Swedish
+* Serbian
+* Croatian
+* Farsi
+* Basque
+* Catalan
+* Galician
+* Brazilian Portuguese
+* Bulgarian
+* Ukrainian
+
+## Right to left direction
+Those languages that require right to left direction are also supported. You must configure the grid to user RTL direction using the ```SetDirection``` method of the ```GridClient``` object:
+    
+```c#
+    var client = new GridClient<Order>(q => orderService.GetOrdersGridRows(columns, q), query, false, "ordersGrid", Columns, locale)
+        .SetDirection(GridDirection.RTL);
+```
+
+## Additional languages
+
+If you need to support other languages, please send me the translation of the following expressions and I will updete the component:
+* Add
+* And
+* Apply
+* Average
+* Back
+* No
+* Yes
+* Clear all filters
+* Clear filter
+* Code
+* Code and confirmation code must be equal to delete this item
+* Code and confirmation code must be equal to save this item
+* Confirm Code
+* Contains
+* Create item
+* There are no items to display
+* Delete
+* Delete item
+* Edit
+* Ends with
+* Equals
+* Drop columns here for column extended sorting
+* Files
+* Filter this column
+* Type
+* Value
+* Greater than
+* Greater than or equals
+* Drop columns here for column grouping
+* Is null
+* Is not null
+* Items
+* Less than
+* Less than or equals
+* Max
+* Min
+* Not equals
+* Or
+* Read item
+* Save
+* Search for ...
+* --- Select an item ---
+* Show
+* Starts with
+* Sum
+* Update item
+* View
+* There was an error creating the new item
+* There was an error deleting this item
+* There was an error updating this item
+* You must select the row you want to delete	
+* You must select the row you want to view	
+* You must select the row you want to edit
+
+## Blazor server-side
+
+# Data annotations
+
+[Index](Documentation.md)
+
+You can customize grid and column settings using data annotations. In other words, you can mark properties of your model class as grid columns, specify column options, call **AutoGenerateColumns** method, and **GridBlazor** will automatically create columns as you describe in your annotations.
+
+There are some attributes for this:
+
+* **GridTableAttribute**: applies to model classes and specify options for the grid (paging options...)
+* **GridColumnAttribute**: applies to model public properties and configure a property as a column with a set of properties
+* **GridHiddenColumn**: applies to model public properties and configures a property as a hidden column
+* **NotMappedColumnAttribute**: applies to model public properties and configures a property as NOT a column. If a property has this attribute, **GridBlazor** will not add that column to the column collection
+
+For example a model class with the following data annotations:
+ 
+```c#
+    [GridTable(PagingEnabled = true, PageSize = 20)]
+    public class Foo
+    {
+        [GridColumn(Position = 0, Title = "Name title", SortEnabled = true, FilterEnabled = true)]
+        public string Name { get; set; }
+
+        [GridColumn(Position = 2, Title = "Active Foo?")]
+        public bool Enabled { get; set; }
+
+        [GridColumn(Position = 1, Title = "Date", Format = "{0:dd/MM/yyyy}")]
+        public DateTime FooDate { get; set; }
+
+        [NotMappedColumn]
+        [GridColumn(Position = 3)]
+        public byte[]() Data { get; set; }
+    }
+```
+describes that the grid table must contain 3 columns (**Name**, **Enabled** and **FooDate**) with custom options. It also enables paging for this grid table and page size as 20 rows.
+
+The steps to build a grid razor page using data annotations with **GridBlazor** are:
+
+1. Create a service with a method to get all items for the grid. An example of this type of service is: 
+
+    ```c#
+        public class FooService
+        {
+            ...
+
+            public ItemsDTO<Foo> GetFooGridRows(QueryDictionary<StringValues> query)
+            {
+                var repository = new FooRepository(_context);
+                var server = new GridServer<Foo>(repository.GetAll(), new QueryCollection(query),
+                    true, "fooGrid", null).AutoGenerateColumns();
+
+                // return items to displays
+                return server.ItemsToDisplay;
+            }
+        }
+    ```
+
+    **Notes**:
+    * The method must have 1 parameter, a dictionary to pass query parameters such as **grid-page**. It must be ot type **QueryDictionary<StringValues>**
+
+    * The **columns** parameter passed to the **GridServer** constructor must be **null**
+
+    * You must use the **AutoGenerateColumns** method of the **GridServer**
+
+2. Create a razor page to render the grid. The page file must have a .razor extension. An example of razor page is:
+
+    ```razor
+        @page "/gridsample"
+        @inject FooService fooService
+
+        @if (_task.IsCompleted)
+        {
+            <GridComponent T="Foo" Grid="@_grid"></GridComponent>
+        }
+        else
+        {
+            <p><em>Loading...</em></p>
+        }
+
+        @code
+        {
+            private CGrid<Foo> _grid;
+            private Task _task;
+
+            protected override async Task OnInitAsync()
+            {
+                var query = new QueryDictionary<StringValues>();
+                query.Add("grid-page", "2");
+
+                var locale = new CultureInfo("fr-FR");
+                var client = new GridClient<Foo>(q => fooService.GetFooGridRows(q), query, false,
+                    "fooGrid", null, locale).AutoGenerateColumns();
+                _grid = client.Grid;
+
+                // Set new items to grid
+                _task = client.UpdateGrid();
+                await _task;
+            }
+        }
+    ```
+
+    **Notes**:
+    * The **columns** parameter passed to the **GridClient** constructor must be **null**
+
+    * You must use the **AutoGenerateColumns** method of the **GridClient** object to configure a grid.
+
+**GridBlazor** will generate columns based on your data annotations when the **AutoGenerateColumns** method is invoked. 
+
+You can add custom columns after or before this method is called, for example:
+
+```c#
+    var server = new GridServer<Foo>(...).AutoGenerateColumns().Columns(columns=>columns.Add(foo=>foo.Child.Price))
+```
+
+```c#
+    var client = new GridClient<Foo>(...).AutoGenerateColumns().Columns(columns=>columns.Add(foo=>foo.Child.Price))
+```
+
+You can also overwrite grid options. For example using the **WithPaging** method:
+
+```c#
+    var server = new GridServer<Foo>(...).AutoGenerateColumns().WithPaging(10)
+```
+
+**Note:** If you use the ```Position``` custom option to order the columns, you must use it on all the columns of the table including the ones using the ```NotMappedColumn``` attribute. If you don't do it the ```AutoGenerateColumns``` will throw an exception.
+
+## Blazor server-side
+
+# Render button, checkbox, etc. in a grid cell
+
+[Index](Documentation.md)
+
+The prefered method is using a Blazor component because it allows event handling with Blazor.
+But you can also use the **RenderValueAs** method to render a custom html markup in the grid cell, as it is used on ASP.NET MVC Core projects.
+In this case events will be managed using Javascript.
+
+You have to use the **RenderComponentAs** method to render a component in a cell:
+
+```c#
+    columns.Add().RenderComponentAs<ButtonCell>();
+```
+
+**RenderComponentAs** method has 3 optional parameters:
+
+Parameter | Type | Description
+--------- | ---- | -----------
+Actions | IList<Action<object>> (optional) | the parent component can pass a list of Actions to be used by the component (see [Passing grid state as parameter](Passing_grid_state_as_parameter.md))
+Functions | IList<Func<object,Task>> (optional) | the parent component can pass a list of Functions to be used by the child component
+Object | object (optional) | the parent component can pass an object to be used by the component (see [Passing grid state as parameter](Passing_grid_state_as_parameter.md))
+
+If you use any of these paramenters, you must use them when creating the component.
+
+The generic type used has to be the component created to render the cell.
+
+You must also create a Blazor component that implements the **ICustomGridComponent** interface.
+This interface includes a mandatory parameter called **Item** of the same type of the grid row element, and 4 optional parameters:
+
+Parameter | Type | Description
+--------- | ---- | -----------
+Item | row element (mandatory) | the row item that will be used by the component
+GridComponent  | GridComponent<T> (CascadingParameter optional) | Parent Grid component
+Grid | CGrid<T> (optional) | Grid can be used to get the grid state (see [Passing grid state as parameter](Passing_grid_state_as_parameter.md))
+Actions | IList<Action<object>> (optional) | the parent component can pass a list of Actions to be used by the component (see [Passing grid state as parameter](Passing_grid_state_as_parameter.md))
+Functions | IList<Func<object,Task>> (optional) | the parent component can pass a list of Functions to be used by the child component
+Object | object (optional) | the parent component can pass an object to be used by the component (see [Passing grid state as parameter](Passing_grid_state_as_parameter.md))
+
+**Actions**, **Functions** and **Object** must be used when calling the **RenderComponentAs** method, but **Grid** can be used without this requirement.
+ 
+The component can include any html elements as well as any event handling features.
+
+## RenderCrudComponentAs
+
+**RenderCrudComponentAs** is a variant of **RenderComponentAs** to be used on grids with CRUD forms. The main difference is:
+- Columns defined with **RenderCrudComponentAs** are visible on CRUD forms and on grids
+- Columns defined with **RenderComponentAs** are visible on grids, but not visible on CRUD forms. 
+
+You must configure columns created with **RenderCrudComponentAs** as Hidden if you want to show them just on CRUD forms:
+
+``` razor
+    c.Add(true).RenderCrudComponentAs<Carousel>();
+```
+
+And finally all columns included in the grid but not in the CRUD forms should be configured as "CRUD hidden" using the ```SetCrudHidden(true)``` method.
+
+**Notes**: 
+- You can have more granularity in the "CRUD hidden" configuration. You can use the ```SetCrudHidden(bool create, bool read, bool update, bool delete)``` method to configure the columns that will be hidden on each type of form.
+- You can have more granularity in the components configuration.  You can use the ```RenderCrudComponentAs<TCreateComponent, TReadComponent, TUpdateComponent, TDeleteComponent>``` method to configure the components that will be shown on each type of form. Id you don't want to show any component for a specific type of form you must use ```NullComponent```
+
+
+## Button
+
+In this sample we name the component **ButtonCell.razor**:
+
+```razor
+    @implements ICustomGridComponent<Order>
+    @inject IUriHelper UriHelper
+
+    <button class='btn btn-sm btn-primary' @onclick="MyClickHandler">Edit</button>
+
+    @code {
+        [CascadingParameter(Name = "GridComponent")]
+        public GridComponent<Order> GridComponent { get; set; }
+        
+        [Parameter]
+        public Order Item { get; protected set; }
+
+        [Parameter]
+        public IList<Action<object>> Actions { get; protected set; }
+
+        [Parameter]
+        public CGrid<Order> Grid { get; protected set; }
+
+        [Parameter]
+        public object Object { get; protected set; }
+
+        private void MyClickHandler(UIMouseEventArgs e)
+        {
+            if (Actions == null)
+            {
+                string gridState = Grid.GetState();
+                if (Object == null)
+                {
+                    UriHelper.NavigateTo($"/editorder/{Item.OrderID.ToString()}/gridsample/{gridState}");
+                }
+                else
+                {
+                    string returnUrl = (string)Object;
+                    UriHelper.NavigateTo($"/editorder/{Item.OrderID.ToString()}/{returnUrl}/{gridState}");
+                }
+            }
+            else
+            {
+                Actions[0]?.Invoke(Item);
+            }
+        }
+    }
+```
+
+## Checkbox
+
+```razor
+    @using GridShared.Columns
+    @implements ICustomGridComponent<Order>
+
+    <input type='checkbox' @onchange="@CheckChanged" />
+
+    @code {
+        [Parameter]
+        public Order Item { get; protected set; }
+
+        private void CheckChanged()
+        {
+            Console.WriteLine("Check changed: Item " + Item.OrderID);
+        }
+    }
+```
+
+## Custom layout
+
+```razor
+    @using GridShared.Columns
+    @implements ICustomGridComponent<Order>
+
+    <b><a class='modal_link' href='#' @onclick="@MyClickHandler">Edit</a></b>
+
+    @code {
+        [Parameter]
+        public Order Item { get; protected set; }
+
+        private void MyClickHandler(UIMouseEventArgs e)
+        {
+            Console.WriteLine("Button clicked: /Home/Edit/" + Item.OrderID);
+        }
+    }
+```
+[<- Data annotations](Data_annotations.md) | [Subgrids ->](Subgrids.md)
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTc1ODAyMDg5NywtMTA3NDk5MTg5MF19
+eyJoaXN0b3J5IjpbNjQ0MTE1NTIsLTEwNzQ5OTE4OTBdfQ==
 -->
