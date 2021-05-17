@@ -70,7 +70,8 @@ Environment=ASPNETCORE_ENVIRONMENT=Production
 [Install]
 WantedBy=multi-user.target
 ```
+Now enable the service with the command
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTUwMDU2MTY5MiwtMzE5NzU5MDU2LC0zOD
+eyJoaXN0b3J5IjpbMTU1MDQ5NjE3OSwtMzE5NzU5MDU2LC0zOD
 Y2MTk1MjYsLTgzOTYwNjgwMF19
 -->
