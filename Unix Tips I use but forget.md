@@ -10,7 +10,7 @@
     Process: 495 ExecStartPre=/usr/sbin/nginx -t -q -g
 Look at the line with **"Active"**.
 
-Reverse proxy using nginx:
+**Reverse proxy using nginx**:
 After configuring nginx, lets encrypt and setup your reverse proxy as follows:
 
  - Locate the file default in folder /etc/nginx/sites-available
@@ -49,8 +49,11 @@ server {
 Before restarting nginx test if configuration is good by using the command 
 
 	nginx -t
+	nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+	nginx: configuration file /etc/nginx/nginx.conf test is successful
+Make sure everything is find before we go ahead.
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE3MjMxODE3NDEsLTM4NjYxOTUyNiwtOD
-M5NjA2ODAwXX0=
+eyJoaXN0b3J5IjpbLTMxOTc1OTA1NiwtMzg2NjE5NTI2LC04Mz
+k2MDY4MDBdfQ==
 -->
