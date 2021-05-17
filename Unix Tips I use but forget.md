@@ -52,8 +52,25 @@ Before restarting nginx test if configuration is good by using the command
 	nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 	nginx: configuration file /etc/nginx/nginx.conf test is successful
 Make sure everything is find before we go ahead.
-Now create a new file in folder */etc/systemd/system*. For convenience if your application name is GreatApp create a file GreatApp.service 
+Now create a new file in folder */etc/systemd/system*. For convenience if your application name is GreatApp create a file GreatApp.service in this folder and have its content along these lines:
+```sh
+[Unit]
+Description= StockSelector
+[Service]
+User=srvean
+Group=srvean
+WorkingDirectory=/home/srvean/DotNet/bin/StockSelector
+ExecStart=/home/srvean/DotNet/bin/StockSelector/StockSelector.Server
+Restart=always
+# Restart service after 60 seconds if the dotnet service crashes:
+RestartSec=60
+SyslogIdentifier=StockSelector
+Environment=ASPNETCORE_ENVIRONMENT=Production
+
+[Install]
+WantedBy=multi-user.target
+```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjY2NDM1NzEyLC0zMTk3NTkwNTYsLTM4Nj
-YxOTUyNiwtODM5NjA2ODAwXX0=
+eyJoaXN0b3J5IjpbLTUwMDU2MTY5MiwtMzE5NzU5MDU2LC0zOD
+Y2MTk1MjYsLTgzOTYwNjgwMF19
 -->
