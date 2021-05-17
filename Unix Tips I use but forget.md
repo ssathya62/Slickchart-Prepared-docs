@@ -11,7 +11,14 @@
 Look at the line with **"Active"**.
 
 Reverse proxy using nginx:
-After configuring nginx and lets enc
+After configuring nginx, lets encrypt and setup your reverse proxy as follows:
+
+ - Locate the file default in folder /etc/nginx/sites-available
+ - In section server 
+
+```sh
+
+```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTIxMzEwNTQwNTAsLTgzOTYwNjgwMF19
+eyJoaXN0b3J5IjpbNDQyMzc2MDU1LC04Mzk2MDY4MDBdfQ==
 -->
