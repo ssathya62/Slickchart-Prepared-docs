@@ -70,8 +70,13 @@ Environment=ASPNETCORE_ENVIRONMENT=Production
 [Install]
 WantedBy=multi-user.target
 ```
-Now enable the service with the command
+Now enable the service with the command:
+
+	sudo systemctl enable GreatApp.service
+Start your application with command
+
+	sudo systemctl start GreatApp.service
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTU1MDQ5NjE3OSwtMzE5NzU5MDU2LC0zOD
-Y2MTk1MjYsLTgzOTYwNjgwMF19
+eyJoaXN0b3J5IjpbLTE1NjMwMzYzNjQsLTMxOTc1OTA1NiwtMz
+g2NjE5NTI2LC04Mzk2MDY4MDBdfQ==
 -->
