@@ -1,6 +1,6 @@
 
 #Unix Tips
-systemctl status application
+**systemctl status application**
 
 	systemctl status nginx
 	 nginx.service - A high performance web server and a reverse proxy server
@@ -10,6 +10,8 @@ systemctl status application
     Process: 495 ExecStartPre=/usr/sbin/nginx -t -q -g
 Look at the line with **"Active"**.
 
+Reverse proxy using nginx:
+After configuring nginx and lets enc
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTgzOTYwNjgwMF19
+eyJoaXN0b3J5IjpbLTIxMzEwNTQwNTAsLTgzOTYwNjgwMF19
 -->
