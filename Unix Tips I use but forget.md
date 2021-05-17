@@ -77,6 +77,5 @@ Start your application with command
 
 	sudo systemctl start GreatApp.service
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE1NjMwMzYzNjQsLTMxOTc1OTA1NiwtMz
-g2NjE5NTI2LC04Mzk2MDY4MDBdfQ==
+eyJoaXN0b3J5IjpbLTE1NjMwMzYzNjRdfQ==
 -->
