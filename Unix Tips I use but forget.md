@@ -14,11 +14,11 @@ Reverse proxy using nginx:
 After configuring nginx, lets encrypt and setup your reverse proxy as follows:
 
  - Locate the file default in folder /etc/nginx/sites-available
- - In section server 
+ - In section server add the following 
 
 ```sh
 
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNDQyMzc2MDU1LC04Mzk2MDY4MDBdfQ==
+eyJoaXN0b3J5IjpbLTM4NjYxOTUyNiwtODM5NjA2ODAwXX0=
 -->
