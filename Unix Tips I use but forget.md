@@ -52,8 +52,8 @@ Before restarting nginx test if configuration is good by using the command
 	nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 	nginx: configuration file /etc/nginx/nginx.conf test is successful
 Make sure everything is find before we go ahead.
-
+Now create a new file in folder */etc/systemd/system*. For convenience if your application name is GreatApp create a file GreatApp.service 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTMxOTc1OTA1NiwtMzg2NjE5NTI2LC04Mz
-k2MDY4MDBdfQ==
+eyJoaXN0b3J5IjpbNjY2NDM1NzEyLC0zMTk3NTkwNTYsLTM4Nj
+YxOTUyNiwtODM5NjA2ODAwXX0=
 -->
