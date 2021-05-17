@@ -46,8 +46,11 @@ server {
 
 }
 ```
-Before restarting nginx test if configuration is 
+Before restarting nginx test if configuration is good by using the command 
+
+	nginx -t
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjE4MDA4NjYwLC0zODY2MTk1MjYsLTgzOT
-YwNjgwMF19
+eyJoaXN0b3J5IjpbLTE3MjMxODE3NDEsLTM4NjYxOTUyNiwtOD
+M5NjA2ODAwXX0=
 -->
