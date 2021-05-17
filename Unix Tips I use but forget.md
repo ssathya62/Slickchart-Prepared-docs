@@ -46,7 +46,8 @@ server {
 
 }
 ```
+Before restarting nginx test if configuration is 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTA2MDQyNjYzNywtMzg2NjE5NTI2LC04Mz
-k2MDY4MDBdfQ==
+eyJoaXN0b3J5IjpbMjE4MDA4NjYwLC0zODY2MTk1MjYsLTgzOT
+YwNjgwMF19
 -->
