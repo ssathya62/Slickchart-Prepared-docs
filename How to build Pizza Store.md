@@ -1,5 +1,6 @@
+
 # Building a Pizza store
-## Create a project from command line
+## Create a project from the command line
 First go to a folder where you want to build the application, in my case my root folder was ~/source/repos. Then the following command was issued to create the project.
 ```sh
  dotnet new blazorwasm --hosted -o PizzaStore
@@ -21,6 +22,10 @@ $ dotnet run
 
 ## Clean template files
 Some of the files that are created by the wizard are not necessary for the application. Hence we delete the files associated with weather forecast and counter.
+
+## Start building the application
+### Create a Pizza class
+Create a Pizza class in Shared project that will hold its name, price and spiciness. We are going to have all properties immuta
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMzY3NjI2Mzc1LDE5MTI3NjM3OTJdfQ==
+eyJoaXN0b3J5IjpbMTcxMTczODQ2MywxOTEyNzYzNzkyXX0=
 -->
