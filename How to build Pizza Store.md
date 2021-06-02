@@ -20,7 +20,7 @@ $ dotnet run
 ```
 
 ## Clean template files
-Some of the files that are created by the wizard are not necessary for the application. Hence we delete the files associated with weather forecast and countert.
+Some of the files that are created by the wizard are not necessary for the application. Hence we delete the files associated with weather forecast and counter.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTU4ODM1Nzg4MywxOTEyNzYzNzkyXX0=
+eyJoaXN0b3J5IjpbMzY3NjI2Mzc1LDE5MTI3NjM3OTJdfQ==
 -->
