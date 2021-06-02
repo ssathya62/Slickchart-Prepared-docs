@@ -29,7 +29,9 @@ Create a Pizza class in Shared project that will hold its name, price and spicin
 
 Next create a menu class that holds various types of pizzas and a method to retrive a pizza by its Id.
 
+We now move creating a cusotmer class that has basic information about the customer (name, address). Following this we also create a s
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE5MDg3MzE5MzIsMTk5MTY5MjE0NywxOT
-EyNzYzNzkyXX0=
+eyJoaXN0b3J5IjpbMTgzODQxODk1MiwxOTkxNjkyMTQ3LDE5MT
+I3NjM3OTJdfQ==
 -->
