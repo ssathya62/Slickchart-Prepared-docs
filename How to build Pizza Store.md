@@ -25,7 +25,7 @@ Some of the files that are created by the wizard are not necessary for the appli
 
 ## Start building the application
 ### Create a Pizza class
-Create a Pizza class in Shared project that will hold its name, price and spiciness. We are going to have all properties immuta
+Create a Pizza class in Shared project that will hold its name, price and spiciness. We are going to have all properties *immutable* as our application is **not** about editing pizzas.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTcxMTczODQ2MywxOTEyNzYzNzkyXX0=
+eyJoaXN0b3J5IjpbMTk5MTY5MjE0NywxOTEyNzYzNzkyXX0=
 -->
