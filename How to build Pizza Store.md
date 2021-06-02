@@ -18,6 +18,9 @@ $ cd Client
 MINGW64 ~/source/repos/PizzaStore/Client
 $ dotnet run
 ```
+
+## Clean template files
+Some of the files that are created by the wizard are not necessary for the application. Hence we delete the files associated with weather forecast and countert.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTkxMjc2Mzc5Ml19
+eyJoaXN0b3J5IjpbLTU4ODM1Nzg4MywxOTEyNzYzNzkyXX0=
 -->
