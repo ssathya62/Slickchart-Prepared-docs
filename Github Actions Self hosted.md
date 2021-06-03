@@ -28,6 +28,7 @@ on:
 	- name: Build
 		run: dotnet build --no-restore
 ```
+First to run the code on our own server we change "runs-on
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTQ1MTYxNDM4OCwyODkxMzQzNjVdfQ==
+eyJoaXN0b3J5IjpbLTUwMDEwNDM1OCwyODkxMzQzNjVdfQ==
 -->
