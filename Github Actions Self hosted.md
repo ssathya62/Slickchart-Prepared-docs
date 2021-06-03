@@ -56,7 +56,7 @@ Then follow the instructions under Configure; *we have already attended to “Us
 
 The build command “dotnet build” generates a debug enabled code and in production, unless the system is for internal use, it is better we run the application in release mode. So change the command:
 ```sh
-run: dotnet build --no-restore`
+run: dotnet build --no-restore
 ```
 to
 ```sh
@@ -112,6 +112,6 @@ jobs:
       run: /home/srvean/bin/installApps.sh
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbOTgyODczNTMyLC0xODg3NDU2MjQ4LC03Mj
-c0NDI0MDIsMjg5MTM0MzY1XX0=
+eyJoaXN0b3J5IjpbLTE0MTgxNTM0MzYsLTE4ODc0NTYyNDgsLT
+cyNzQ0MjQwMiwyODkxMzQzNjVdfQ==
 -->
