@@ -36,34 +36,24 @@ runs-on: self-hosted
 ## Setting Up
 On the main menu select Settings for the project and click on “Actions”. Make sure “Allow all actions” is selected.
 
-When you clicked on “Actions” you should have noted that additional actions opened up and we are actually in the “General” menu. Click on “Runners” and 
-click on “Add runner”. Select appropriate operating system and architecture. You
+When you clicked on “Actions” you should have noted that additional actions opened up and we are actually in the “General” menu. Click on “Runners” and click on “Add runner”. Select appropriate operating system and architecture. You
 should have a real valid reason not to select Linux and Architecture X64.
 
 ## On the terminal
-
 We now have some copy and paste work to do. From the download section of the
 “Runners” page select each command that will
 
 -   Create a folder
-
 -   Download the latest runner package
-
 -   Extract the installer
-
-Then follow the instructions under Configure; we have already done “Using your
-self-hosted runner”.
+Then follow the instructions under Configure; *we have already attended to “Using your self-hosted runner”.*
 
 ## Changes-2
 
-The build command “dotnet build” generates a debug enabled code and in
-production, unless the system is for internal use, it is better we run the
-application in release mode. So change the command:
+The build command “dotnet build” generates a debug enabled code and in production, unless the system is for internal use, it is better we run the application in release mode. So change the command:
 
 `run: dotnet build --no-restore`
-
 `to`
-
 run: dotnet publish -r linux-x64 --self-contained false --configuration Release
 
 When the commands run successfully your executables will be generated several
@@ -92,6 +82,6 @@ sudo svc.sh start
 
 sudo svc.sh status
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTgyOTgzMDQxLC03Mjc0NDI0MDIsMjg5MT
-M0MzY1XX0=
+eyJoaXN0b3J5IjpbMjAzMTQwNzM4MywtNzI3NDQyNDAyLDI4OT
+EzNDM2NV19
 -->
