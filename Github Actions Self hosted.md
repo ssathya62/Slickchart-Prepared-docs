@@ -70,15 +70,44 @@ execute our executables. To do this I added another section as follows:
 ## Final note:
 When we followed the steps under “On the terminal” =\> Configure we started the jobs that will execute the yaml instructions with the command “run.sh”. This needs you log into server and start run.sh manually. We can convert this action
 into a service by running the commands
-
+```sh
 cd \~/actions-runner
-
 sudo svc.sh install
-
 sudo svc.sh start
-
 sudo svc.sh status
+```
+Of course the last line is to check status.
+
+### Final file
+```sh
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      #run: dotnet build --no-restore
+      run:  dotnet publish -r linux-x64 --self-contained false --configuration Release
+    - name: Install
+      run: /home/srvean/bin/installApps.sh
+```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNzA2NjUwMjQ2LC03Mjc0NDI0MDIsMjg5MT
-M0MzY1XX0=
+eyJoaXN0b3J5IjpbMTI3Nzg2ODk1NywtNzI3NDQyNDAyLDI4OT
+EzNDM2NV19
 -->
