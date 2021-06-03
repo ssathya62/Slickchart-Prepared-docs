@@ -5,7 +5,7 @@ title: GitHub Actions
 
 ## Introduction
 
-Most tutorial I see online for Github actions are for build and testing and if at all the CD part is included its for installing the application in Azure environment. In my case I want to deploy on my own virtual machine (could be on Azure, AWS, GCP, or any other provider). This document is create as I follow tutorials around the web and compile it into one that will work for me.
+Most tutorial I see online for Github actions are for build and testing and if at all the CD part is included its for installing the application in Azure environment. In my case I want to deploy on my own virtual machine (could be on Azure, AWS, GCP, or any other provider). This document is create as I follow tutorials around the web and compile it into one that works for me.
 ```
 name: .NET
 
@@ -29,7 +29,9 @@ on:
 		run: dotnet build --no-restore
 ```
 First to run the code on our own server we change "runs-on" value.
+
 ~~runs-on: ubuntu-latest~~
+
 runs-on: self-hosted
 
 
@@ -108,6 +110,6 @@ jobs:
       run: /home/srvean/bin/installApps.sh
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE4ODc0NTYyNDgsLTcyNzQ0MjQwMiwyOD
-kxMzQzNjVdfQ==
+eyJoaXN0b3J5IjpbLTE5Njk2Mzc3NDUsLTE4ODc0NTYyNDgsLT
+cyNzQ0MjQwMiwyODkxMzQzNjVdfQ==
 -->
