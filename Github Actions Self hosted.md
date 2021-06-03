@@ -28,7 +28,9 @@ on:
 	- name: Build
 		run: dotnet build --no-restore
 ```
-First to run the code on our own server we change "runs-on
+First to run the code on our own server we change "runs-on" value.
+~~runs-on: ubuntu-latest~~
+runs-on: self-hosted
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTUwMDEwNDM1OCwyODkxMzQzNjVdfQ==
+eyJoaXN0b3J5IjpbLTcyNzQ0MjQwMiwyODkxMzQzNjVdfQ==
 -->
