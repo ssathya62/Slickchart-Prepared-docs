@@ -63,9 +63,7 @@ to
 run: dotnet publish -r linux-x64 --self-contained false --configuration Release
 ```
 When the commands run successfully your executables will be generated several
-folders deep in a bin/……./Publish folder. I built a script in the server that
-will copy the executables from publish folder to the folder where we want to
-execute our executables. To do this I added another section as follows:
+folders deep in a bin/……./Publish folder. I built a script in the server that will copy the executables from publish folder to the folder where we want our executables live. To do this I added another section as follows:
 ```sh
 -name: Install
 	run: /home/srvean/bin/installApps.sh
@@ -112,6 +110,6 @@ jobs:
       run: /home/srvean/bin/installApps.sh
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE0MTgxNTM0MzYsLTE4ODc0NTYyNDgsLT
+eyJoaXN0b3J5IjpbLTE4MjM1NDI1NDIsLTE4ODc0NTYyNDgsLT
 cyNzQ0MjQwMiwyODkxMzQzNjVdfQ==
 -->
