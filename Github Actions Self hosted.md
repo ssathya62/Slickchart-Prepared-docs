@@ -1,6 +1,6 @@
 
 ---
-title: GitHub Actions
+GitHub Actions on self hosted server
 ---
 
 ## Introduction
@@ -110,6 +110,6 @@ jobs:
       run: /home/srvean/bin/installApps.sh
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE4MjM1NDI1NDIsLTE4ODc0NTYyNDgsLT
-cyNzQ0MjQwMiwyODkxMzQzNjVdfQ==
+eyJoaXN0b3J5IjpbMjUwNDgxMzIxLC0xODg3NDU2MjQ4LC03Mj
+c0NDI0MDIsMjg5MTM0MzY1XX0=
 -->
