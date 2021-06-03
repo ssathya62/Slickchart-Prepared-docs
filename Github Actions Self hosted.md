@@ -51,27 +51,24 @@ Then follow the instructions under Configure; *we have already attended to “Us
 ## Changes-2
 
 The build command “dotnet build” generates a debug enabled code and in production, unless the system is for internal use, it is better we run the application in release mode. So change the command:
-
-`run: dotnet build --no-restore`
-`to`
+```sh
+run: dotnet build --no-restore`
+```
+to
+```sh
 run: dotnet publish -r linux-x64 --self-contained false --configuration Release
-
+```
 When the commands run successfully your executables will be generated several
 folders deep in a bin/……./Publish folder. I built a script in the server that
 will copy the executables from publish folder to the folder where we want to
 execute our executables. To do this I added another section as follows:
-
-| \- name: Install |
-|------------------|
-|                  |
-
-run: /home/srvean/bin/installApps.sh
+```sh
+-name: Install
+	run: /home/srvean/bin/installApps.sh
+```
 
 ## Final note:
-
-When we followed the steps under “On the terminal” =\> Configure we started the
-jobs that will execute the yaml instructions with the command “run.sh”. This
-needs you log into server and start run.sh manually. We can convert this action
+When we followed the steps under “On the terminal” =\> Configure we started the jobs that will execute the yaml instructions with the command “run.sh”. This needs you log into server and start run.sh manually. We can convert this action
 into a service by running the commands
 
 cd \~/actions-runner
@@ -82,6 +79,6 @@ sudo svc.sh start
 
 sudo svc.sh status
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjAzMTQwNzM4MywtNzI3NDQyNDAyLDI4OT
-EzNDM2NV19
+eyJoaXN0b3J5IjpbNzA2NjUwMjQ2LC03Mjc0NDI0MDIsMjg5MT
+M0MzY1XX0=
 -->
