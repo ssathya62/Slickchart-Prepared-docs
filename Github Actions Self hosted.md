@@ -24,10 +24,10 @@ on:
 	with:
 		dotnet-version: 5.0.x
 	- name: Restore dependencies
-run: dotnet restore
-- name: Build
-run: dotnet build --no-restore
+		run: dotnet restore
+	- name: Build
+		run: dotnet build --no-restore
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE2NzI0ODA4NTIsMjg5MTM0MzY1XX0=
+eyJoaXN0b3J5IjpbMTQ1MTYxNDM4OCwyODkxMzQzNjVdfQ==
 -->
