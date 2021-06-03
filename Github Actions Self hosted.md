@@ -29,11 +29,13 @@ on:
 		run: dotnet build --no-restore
 ```
 First to run the code on our own server we change "runs-on" value.
-
-~~runs-on: ubuntu-latest~~
-
+```
+runs-on: ubuntu-latest
+```
+to
+```
 runs-on: self-hosted
-
+```
 
 ## Setting Up
 On the main menu select Settings for the project and click on “Actions”. Make sure “Allow all actions” is selected.
@@ -110,6 +112,6 @@ jobs:
       run: /home/srvean/bin/installApps.sh
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE5Njk2Mzc3NDUsLTE4ODc0NTYyNDgsLT
-cyNzQ0MjQwMiwyODkxMzQzNjVdfQ==
+eyJoaXN0b3J5IjpbOTgyODczNTMyLC0xODg3NDU2MjQ4LC03Mj
+c0NDI0MDIsMjg5MTM0MzY1XX0=
 -->
