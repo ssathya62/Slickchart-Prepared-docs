@@ -78,7 +78,7 @@ sudo svc.sh status
 ```
 Of course the last line is to check status.
 
-### Final file
+### Final yaml file
 ```sh
 name: .NET
 
@@ -108,6 +108,6 @@ jobs:
       run: /home/srvean/bin/installApps.sh
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTI3Nzg2ODk1NywtNzI3NDQyNDAyLDI4OT
-EzNDM2NV19
+eyJoaXN0b3J5IjpbLTE4ODc0NTYyNDgsLTcyNzQ0MjQwMiwyOD
+kxMzQzNjVdfQ==
 -->
